@@ -101,6 +101,8 @@ Voir la section « Limites » de [docs/fonctionnement-claude.md](docs/fonctionne
 
 ## Contribuer
 
+Le guide complet est dans [CONTRIBUTING.md](CONTRIBUTING.md). En participant, vous acceptez le [code de conduite](CODE_OF_CONDUCT.md).
+
 Les contributions sont bienvenues : signalement de bug, correction, amélioration de la documentation.
 
 1. Ouvrez une issue qui décrit le problème ou la proposition. Pour un bug, indiquez la version de Codex Desktop (`cat /usr/lib/chatgpt/version`), celle de Claude Code (`claude --version`) et le message d’erreur.
