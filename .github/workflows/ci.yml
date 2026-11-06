@@ -11,7 +11,7 @@ jobs:
   tests:
     name: Tests et controle des secrets
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
 
@@ -25,5 +25,18 @@ jobs:
       - name: Dependances
         run: python -m pip install --upgrade pip aiohttp cryptography Pillow
 
-      - name: Tests du relais et de gpu-agents
-        run: bash scripts/run-tests.sh
+      # -v nomme chaque test ; un test bloque plus de 5 minutes est interrompu
+      # et faulthandler imprime la pile d appels de tous les fils.
+      - name: Tests du relais
+        working-directory: relay
+        env:
+          PYTHONFAULTHANDLER: '1'
+          PYTHONUNBUFFERED: '1'
+        run: timeout -s ABRT 300 python -m unittest discover -v -p 'test_*.py' < /dev/null
+
+      - name: Tests de gpu-agents
+        working-directory: gpu-agents
+        env:
+          PYTHONFAULTHANDLER: '1'
+          PYTHONUNBUFFERED: '1'
+        run: timeout -s ABRT 300 python -m unittest discover -v -p 'test_*.py' < /dev/null
