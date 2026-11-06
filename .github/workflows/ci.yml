@@ -1,0 +1,29 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  tests:
+    name: Tests et controle des secrets
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Controle des secrets
+        run: bash scripts/check-secrets.sh
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.14'
+
+      - name: Dependances
+        run: python -m pip install --upgrade pip aiohttp cryptography Pillow
+
+      - name: Tests du relais et de gpu-agents
+        run: bash scripts/run-tests.sh

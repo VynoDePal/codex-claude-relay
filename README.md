@@ -1,6 +1,6 @@
 # Claude dans Codex Desktop
 
-[![Licence MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
+[![CI](https://github.com/VynoDePal/codex-claude-relay/actions/workflows/ci.yml/badge.svg)](https://github.com/VynoDePal/codex-claude-relay/actions/workflows/ci.yml) [![Licence MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 
 Ce dépôt contient la configuration complète qui permet d’utiliser **Claude (Opus 5.5, via Claude Code)** comme modèle dans le sélecteur de Codex Desktop, avec tous les outils de Codex : shell, édition de fichiers, connecteurs, navigateur intégré, Google Chrome, délégation.
 
@@ -108,6 +108,8 @@ Les contributions sont bienvenues : signalement de bug, correction, amélioratio
 3. Lancez `./scripts/run-tests.sh` : les tests du relais et de `gpu-agents` doivent tous passer. Ajoutez un test pour tout changement de comportement.
 4. Lancez `./scripts/check-secrets.sh` avant chaque commit. N’ajoutez ni jeton, ni adresse de passerelle, ni chemin personnel, ni identifiant de chat Codex.
 5. Ouvrez une pull request qui explique le problème, le changement et la façon dont vous l’avez testé.
+
+La GitHub Action [CI](.github/workflows/ci.yml) lance ces deux contrôles à chaque push et à chaque pull request ; une pull request doit être au vert pour être fusionnée.
 
 Les dossiers `relay/`, `claude-code-bridge/`, `gpu-agents/`, `skills/model-routing/`, `relay-guard/` et `systemd/` sont synchronisés automatiquement depuis l’installation du mainteneur (voir [Synchronisation automatique](#synchronisation-automatique)). Une contribution qui les modifie est donc d’abord reportée dans cette installation, puis publiée par la synchronisation. `README.md`, `LICENSE`, `docs/`, `config/` et `scripts/` se modifient directement.
 
