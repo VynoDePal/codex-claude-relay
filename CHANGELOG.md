@@ -10,6 +10,7 @@ Le format s’inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/
 - `CHANGELOG.md`.
 - Modèles d’issue (signaler un bug, proposer une amélioration) et de pull request dans `.github/`.
 - Code de conduite (`CODE_OF_CONDUCT.md`, Contributor Covenant 2.1) et guide de contribution (`CONTRIBUTING.md`).
+- Politique de sécurité (`SECURITY.md`) et signalement privé des vulnérabilités ; modèle d’issue pour les questions.
 
 ## [1.0.0] - 2026-11-06
 
