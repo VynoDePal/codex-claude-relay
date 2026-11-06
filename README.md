@@ -1,5 +1,7 @@
 # Claude dans Codex Desktop
 
+[![Licence MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
+
 Ce dépôt contient la configuration complète qui permet d’utiliser **Claude (Opus 5.5, via Claude Code)** comme modèle dans le sélecteur de Codex Desktop, avec tous les outils de Codex : shell, édition de fichiers, connecteurs, navigateur intégré, Google Chrome, délégation.
 
 Il contient aussi le connecteur **claude_code**, qui permet à n’importe quel modèle de Codex de déléguer une tâche de codage à Claude Code, et un contrôle automatique qui répare la configuration après les mises à jour de Codex Desktop.
@@ -97,3 +99,18 @@ docs/                Documentation
 
 Voir la section « Limites » de [docs/fonctionnement-claude.md](docs/fonctionnement-claude.md#limites).
 
+## Contribuer
+
+Les contributions sont bienvenues : signalement de bug, correction, amélioration de la documentation.
+
+1. Ouvrez une issue qui décrit le problème ou la proposition. Pour un bug, indiquez la version de Codex Desktop (`cat /usr/lib/chatgpt/version`), celle de Claude Code (`claude --version`) et le message d’erreur.
+2. Forkez le dépôt et créez une branche pour votre changement.
+3. Lancez `./scripts/run-tests.sh` : les tests du relais et de `gpu-agents` doivent tous passer. Ajoutez un test pour tout changement de comportement.
+4. Lancez `./scripts/check-secrets.sh` avant chaque commit. N’ajoutez ni jeton, ni adresse de passerelle, ni chemin personnel, ni identifiant de chat Codex.
+5. Ouvrez une pull request qui explique le problème, le changement et la façon dont vous l’avez testé.
+
+Les dossiers `relay/`, `claude-code-bridge/`, `gpu-agents/`, `skills/model-routing/`, `relay-guard/` et `systemd/` sont synchronisés automatiquement depuis l’installation du mainteneur (voir [Synchronisation automatique](#synchronisation-automatique)). Une contribution qui les modifie est donc d’abord reportée dans cette installation, puis publiée par la synchronisation. `README.md`, `LICENSE`, `docs/`, `config/` et `scripts/` se modifient directement.
+
+## Licence
+
+Distribué sous licence MIT. Voir [LICENSE](LICENSE).
