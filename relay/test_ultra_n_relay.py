@@ -69,7 +69,8 @@ class ResearchDispatchTests(unittest.IsolatedAsyncioTestCase):
    finally:cancelled.set()
   with patch('ultra_n_engine.run_research',engine):
    r=await self.client.post('/v1/responses',headers=self.headers,json={'model':'deepseek-v4.1-ultra-n','stream':True,'input':'Question'})
-   await entered.wait()
+   self.assertEqual(r.status,200,await r.text() if r.status!=200 else '')
+   await asyncio.wait_for(entered.wait(),10)
    busy=await self.client.post('/v1/responses',headers=self.headers,json={'model':'deepseek-v4.1-ultra-n','input':'Other'})
    self.assertEqual(busy.status,409)
    r.close();await asyncio.wait_for(cancelled.wait(),2)

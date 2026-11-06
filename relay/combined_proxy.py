@@ -37,6 +37,9 @@ def binary_client_version(path,signature):
  return match.group(1)
 
 def installed_client_version():
+ # CODEX_CLIENT_VERSION lets CI and machines without Codex Desktop run the router.
+ override=os.environ.get('CODEX_CLIENT_VERSION','').strip()
+ if override and re.fullmatch(VERSION_PATTERN,override):return override
  for candidate in ('/usr/lib/chatgpt/resources/codex',shutil.which('codex')):
   if not candidate:continue
   try:
