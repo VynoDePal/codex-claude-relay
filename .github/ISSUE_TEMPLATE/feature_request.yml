@@ -1,0 +1,36 @@
+name: Proposer une amélioration
+description: Une nouvelle fonctionnalité ou une amélioration d’un comportement existant.
+title: "[Proposition] "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problème
+      description: Quel besoin ou quelle difficulté cette proposition résout-elle ?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposition
+      description: Le comportement attendu, avec un exemple concret si possible.
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives envisagées
+  - type: dropdown
+    id: component
+    attributes:
+      label: Composant concerné
+      options:
+        - Relais Claude (routeur, claude_relay)
+        - Relais Gemini
+        - Connecteur claude_code
+        - Connecteur gpu_agents
+        - Navigateur (intégré ou Chrome)
+        - Installation ou services systemd
+        - Documentation
+        - Autre

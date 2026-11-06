@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Documentation
+    url: https://github.com/VynoDePal/codex-claude-relay/tree/main/docs
+    about: Installation, fonctionnement détaillé et dépannage.

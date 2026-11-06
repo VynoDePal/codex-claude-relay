@@ -1,0 +1,72 @@
+name: Signaler un bug
+description: Un problème avec le relais, les connecteurs, le navigateur ou l’installation.
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Merci de signaler ce problème. N’incluez **aucun secret** : jeton, clé, contenu de `~/.codex/auth.json`, adresse de votre passerelle GPU, chemin personnel ou identifiant de chat Codex.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: Ce qui se passe, et ce que vous attendiez.
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Étapes pour reproduire
+      placeholder: |
+        1. Choisir « Claude » dans le sélecteur de modèles
+        2. Envoyer …
+        3. Constater …
+    validations:
+      required: true
+  - type: dropdown
+    id: component
+    attributes:
+      label: Composant concerné
+      options:
+        - Relais Claude (routeur, claude_relay)
+        - Relais Gemini
+        - Connecteur claude_code
+        - Connecteur gpu_agents
+        - Navigateur (intégré ou Chrome)
+        - Installation ou services systemd
+        - codex-relays-check ou codex-relay-sync
+        - Autre ou je ne sais pas
+    validations:
+      required: true
+  - type: input
+    id: codex-version
+    attributes:
+      label: Version de Codex Desktop
+      description: Sortie de `cat /usr/lib/chatgpt/version` et de `/usr/lib/chatgpt/resources/codex --version`.
+    validations:
+      required: true
+  - type: input
+    id: claude-version
+    attributes:
+      label: Version de Claude Code
+      description: Sortie de `claude --version`.
+  - type: input
+    id: os
+    attributes:
+      label: Système
+      placeholder: Ubuntu 26.04
+  - type: textarea
+    id: logs
+    attributes:
+      label: Journaux
+      description: Sorties utiles de `journalctl --user -u codex-model-router -n 50` et de `cat ~/.codex/relay-guard/last-check.txt`. Relisez-les avant de les coller.
+      render: text
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Vérifications
+      options:
+        - label: J’ai lancé `./scripts/run-tests.sh` et indiqué son résultat si un test échoue.
+        - label: Ce rapport ne contient ni secret, ni adresse de passerelle, ni chemin personnel.
+          required: true

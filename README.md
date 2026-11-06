@@ -109,7 +109,7 @@ Les contributions sont bienvenues : signalement de bug, correction, amélioratio
 4. Lancez `./scripts/check-secrets.sh` avant chaque commit. N’ajoutez ni jeton, ni adresse de passerelle, ni chemin personnel, ni identifiant de chat Codex.
 5. Ouvrez une pull request qui explique le problème, le changement et la façon dont vous l’avez testé.
 
-La GitHub Action [CI](.github/workflows/ci.yml) lance ces deux contrôles à chaque push et à chaque pull request ; une pull request doit être au vert pour être fusionnée.
+La GitHub Action [CI](.github/workflows/ci.yml) lance ces deux contrôles à chaque push et à chaque pull request ; une pull request doit être au vert pour être fusionnée. Les modèles d’issue et de pull request guident ces étapes ; notez votre changement dans [CHANGELOG.md](CHANGELOG.md), section « Non publié ».
 
 Les dossiers `relay/`, `claude-code-bridge/`, `gpu-agents/`, `skills/model-routing/`, `relay-guard/` et `systemd/` sont synchronisés automatiquement depuis l’installation du mainteneur (voir [Synchronisation automatique](#synchronisation-automatique)). Une contribution qui les modifie est donc d’abord reportée dans cette installation, puis publiée par la synchronisation. `README.md`, `LICENSE`, `docs/`, `config/` et `scripts/` se modifient directement.
 
