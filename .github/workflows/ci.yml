@@ -7,6 +7,10 @@ on:
 permissions:
   contents: read
 
+# Pas de Codex Desktop sur le runner : version de client fixe pour le routeur.
+env:
+  CODEX_CLIENT_VERSION: 0.167.0
+
 jobs:
   tests:
     name: Tests et controle des secrets
