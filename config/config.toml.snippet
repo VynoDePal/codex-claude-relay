@@ -1,0 +1,26 @@
+# À ajouter à ~/.codex/config.toml (remplacer HOME par votre dossier personnel).
+openai_base_url = "http://127.0.0.1:4012/v1"
+
+[model_providers.combined]
+name = "OpenAI + GPU Gateway"
+base_url = "http://127.0.0.1:4012/v1"
+wire_api = "responses"
+requires_openai_auth = true
+supports_websockets = false
+
+[mcp_servers.claude_code]
+command = "/usr/bin/python3"
+args = ["HOME/.local/share/codex-claude-bridge/bridge.py"]
+startup_timeout_sec = 20
+tool_timeout_sec = 360
+
+[mcp_servers.gpu_agents]
+command = "/usr/bin/python3"
+args = ["HOME/.local/share/codex-gpu-agents/bridge.py"]
+startup_timeout_sec = 20
+tool_timeout_sec = 45
+
+# Pour choisir Claude par défaut :
+# model = "claude-code-opus"
+# model_reasoning_effort = "high"
+

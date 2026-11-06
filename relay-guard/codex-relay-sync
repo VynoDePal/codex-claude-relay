@@ -1,0 +1,208 @@
+#!/usr/bin/python3
+"""Synchronise la configuration Claude active vers le depot codex-claude-relay.
+
+Copie les fichiers du relais dans le depot, verifie l'absence de secrets, lance
+les tests, puis committe et pousse les seuls fichiers geres. Lance par
+codex-relay-sync.path quand un fichier du relais change, et chaque heure par
+codex-relay-sync.timer pour rattraper un envoi manque.
+Usage : codex-relay-sync [--dry-run] [--no-push] [--no-notify]
+"""
+import fcntl
+import os
+import pathlib
+import re
+import shutil
+import subprocess
+import sys
+import time
+
+HOME = pathlib.Path.home()
+HOME_BYTES = str(HOME).encode()
+STATE = HOME / '.codex/relay-guard'
+REPO_FILE = STATE / 'sync-repo'
+LOG = STATE / 'last-sync.txt'
+LOCK = STATE / 'sync.lock'
+GATEWAY = HOME / '.codex/gateway-compat'
+BRIDGE = HOME / '.local/share/codex-claude-bridge'
+SKILL = HOME / '.codex/skills/model-routing'
+BIN = HOME / '.local/bin'
+UNITS_DIR = HOME / '.config/systemd/user'
+SCRIPTS = ('codex-relays-check', 'codex-relay-sync')
+UNITS = ('codex-model-router.service', 'codex-gpu-compat.service', 'codex-relays-check.service',
+         'codex-relays-check.path', 'codex-relays-check.timer', 'codex-relay-sync.service',
+         'codex-relay-sync.path', 'codex-relay-sync.timer')
+GPU_AGENTS = HOME / '.local/share/codex-gpu-agents'
+UUID = re.compile(rb'[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}')
+# Fichiers d'etat ou de reglage local, jamais versionnes.
+LOCAL_ONLY = {'config.json', 'state.lock', 'sessions.json', 'sessions.lock'}
+RUNTIME_DIRS = {'logs', 'tasks', 'teams', 'jobs', 'bin', '__pycache__'}
+# Dossiers du depot qui refletent un dossier actif : un fichier supprime ici est supprime la-bas.
+MIRRORS = ('relay/', 'claude-code-bridge/', 'gpu-agents/', 'skills/model-routing/')
+# Seuls ces chemins sont commites ; docs/, scripts/ et README restent manuels.
+MANAGED = ('relay', 'claude-code-bridge', 'gpu-agents', 'skills/model-routing', 'relay-guard', 'systemd')
+ENV = {**os.environ, 'GIT_TERMINAL_PROMPT': '0'}
+
+lines = []
+args = set(sys.argv[1:])
+
+
+def note(msg):
+    lines.append(msg)
+    print(msg, flush=True)
+
+
+def run(cmd, cwd=None, timeout=900):
+    return subprocess.run(cmd, cwd=cwd, capture_output=True, text=True, timeout=timeout, env=ENV)
+
+
+def write_log():
+    if '--dry-run' not in args:
+        LOG.write_text(time.strftime('%Y-%m-%d %H:%M:%S') + '\n' + '\n'.join(lines) + '\n')
+
+
+def fail(msg):
+    note('ECHEC : ' + msg)
+    write_log()
+    if '--no-notify' not in args and shutil.which('notify-send'):
+        run(['notify-send', '-a', 'Codex', '-u', 'critical', 'Synchronisation du depot Codex echouee',
+             msg[:400] + f'\nDetail : {LOG}'])
+    sys.exit(1)
+
+
+def git_files(src):
+    if not (src / '.git').exists():
+        # Installation neuve : pas de depot git local, on prend les fichiers presents.
+        return [f for f in plain_files(src) if not f.startswith('before-') and not f.endswith('-models.json')
+                and f not in LOCAL_ONLY and f.split('/')[0] not in RUNTIME_DIRS]
+    r = run(['git', 'ls-files', '--cached', '--others', '--exclude-standard', '-z'], cwd=src)
+    if r.returncode:
+        fail(f'git ls-files a echoue dans {src} : {r.stderr.strip()[:200]}')
+    return sorted(f for f in r.stdout.split('\0') if f and f != '.gitignore' and f not in LOCAL_ONLY and (src / f).is_file())
+
+
+def plain_files(src):
+    return sorted(str(p.relative_to(src)) for p in src.rglob('*')
+                  if p.is_file() and '__pycache__' not in p.parts and p.suffix != '.pyc')
+
+
+def executable(path):
+    return bool(path.stat().st_mode & 0o111)
+
+
+def desired():
+    """Contenu attendu dans le depot : {chemin relatif: (octets, executable)}."""
+    want = {}
+
+    def add(rel, src, data=None):
+        want[rel] = (src.read_bytes() if data is None else data, executable(src))
+    for f in git_files(GATEWAY):
+        add('relay/' + f, GATEWAY / f)
+    for f in git_files(BRIDGE):
+        add('claude-code-bridge/' + f, BRIDGE / f)
+    for f in git_files(GPU_AGENTS):
+        add('gpu-agents/' + f, GPU_AGENTS / f)
+    wrapper = BIN / 'gpu-agents'
+    if wrapper.exists():
+        want['gpu-agents/bin/gpu-agents'] = (wrapper.read_bytes().replace(HOME_BYTES, b'$HOME'), True)
+    for f in plain_files(SKILL):
+        data = (SKILL / f).read_bytes()
+        if f.endswith(('.md', '.json')):
+            # Pas de chemin personnel ni d'identifiant de chat Codex dans le depot public.
+            data = UUID.sub(b'00000000-0000-0000-0000-000000000000', data.replace(HOME_BYTES, b'~'))
+        add('skills/model-routing/' + f, SKILL / f, data)
+    for name in SCRIPTS:
+        if (BIN / name).exists():
+            add('relay-guard/' + name, BIN / name)
+    required = STATE / 'config-required.toml'
+    data = required.read_bytes().replace(HOME_BYTES, b'__HOME__')
+    want['relay-guard/config-required.toml.template'] = (data, False)
+    for unit in UNITS:
+        if (UNITS_DIR / unit).exists():
+            want['systemd/' + unit] = ((UNITS_DIR / unit).read_bytes().replace(HOME_BYTES, b'%h'), False)
+    return want
+
+
+def apply(repo, want, dry):
+    changed = []
+    for rel, (data, exe) in sorted(want.items()):
+        dst = repo / rel
+        if dst.is_file() and dst.read_bytes() == data and executable(dst) == exe:
+            continue
+        changed.append(rel)
+        if not dry:
+            dst.parent.mkdir(parents=True, exist_ok=True)
+            tmp = dst.with_name('.' + dst.name + '.sync')
+            tmp.write_bytes(data)
+            os.chmod(tmp, 0o755 if exe else 0o644)
+            os.replace(tmp, dst)
+    for rel in run(['git', 'ls-files', '-z'], cwd=repo).stdout.split('\0'):
+        if rel.startswith(MIRRORS) and rel not in want:
+            changed.append(rel + ' (supprime)')
+            if not dry:
+                (repo / rel).unlink(missing_ok=True)
+    return changed
+
+
+def commit(repo, changed):
+    r = run([str(repo / 'scripts/check-secrets.sh')], cwd=repo)
+    if r.returncode:
+        fail('secret ou chemin personnel detecte, rien n a ete commite : ' + (r.stdout + r.stderr).strip()[-300:])
+    r = run([sys.executable, '-m', 'unittest', 'discover', '-p', 'test_*.py'], cwd=repo / 'relay')
+    if r.returncode:
+        fail('tests en echec, rien n a ete commite : ' + ' | '.join((r.stdout + r.stderr).strip().splitlines()[-4:]))
+    g = run([sys.executable, '-m', 'unittest', 'discover', '-p', 'test_*.py'], cwd=repo / 'gpu-agents')
+    if g.returncode:
+        fail('tests gpu-agents en echec, rien n a ete commite : ' + ' | '.join((g.stdout + g.stderr).strip().splitlines()[-4:]))
+    tail = (r.stdout + r.stderr).strip().splitlines()
+    note('tests : ' + (tail[-3] if len(tail) >= 3 else 'OK'))
+    run(['git', 'add', '-A', '--', *MANAGED], cwd=repo)
+    if not run(['git', 'diff', '--cached', '--quiet', '--', *MANAGED], cwd=repo).returncode:
+        note('aucune difference a commiter')
+        return
+    subject = f'Synchronisation automatique du relais ({len(changed)} fichier(s))'
+    body = '\n'.join('- ' + c for c in changed)
+    r = run(['git', 'commit', '-q', '-m', subject + '\n\n' + body, '--', *MANAGED], cwd=repo)
+    if r.returncode:
+        fail('git commit a echoue : ' + r.stderr.strip()[-300:])
+    note('commit : ' + run(['git', 'log', '--oneline', '-1'], cwd=repo).stdout.strip())
+
+
+def push(repo):
+    ahead = run(['git', 'rev-list', '--count', '@{u}..HEAD'], cwd=repo)
+    if ahead.returncode or int(ahead.stdout.strip() or 0) == 0:
+        return
+    r = run(['git', 'push', '-q'], cwd=repo, timeout=180)
+    if r.returncode:
+        p = run(['git', 'pull', '--rebase', '--autostash', '-q'], cwd=repo, timeout=180)
+        if p.returncode:
+            run(['git', 'rebase', '--abort'], cwd=repo)
+            fail('envoi refuse et rebase impossible : ' + (r.stderr + p.stderr).strip()[-300:])
+        r = run(['git', 'push', '-q'], cwd=repo, timeout=180)
+        if r.returncode:
+            fail('envoi vers GitHub refuse : ' + r.stderr.strip()[-300:])
+    note(f'pousse vers GitHub : {ahead.stdout.strip()} commit(s)')
+
+
+def main():
+    dry = '--dry-run' in args
+    STATE.mkdir(mode=0o700, parents=True, exist_ok=True)
+    if not REPO_FILE.exists():
+        fail(f'depot non configure : ecrire son chemin dans {REPO_FILE}')
+    repo = pathlib.Path(REPO_FILE.read_text().strip()).expanduser()
+    if not (repo / '.git').is_dir():
+        fail(f'{repo} n est pas un depot git')
+    if any((repo / '.git' / d).exists() for d in ('rebase-merge', 'rebase-apply', 'MERGE_HEAD')):
+        fail('une operation git est en cours dans le depot')
+    with open(LOCK, 'w') as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        changed = apply(repo, desired(), dry)
+        note(('a synchroniser : ' if dry else 'synchronises : ') + (', '.join(changed) if changed else 'rien'))
+        if changed and not dry:
+            commit(repo, changed)
+        if not dry and '--no-push' not in args:
+            push(repo)
+    write_log()
+
+
+if __name__ == '__main__':
+    main()

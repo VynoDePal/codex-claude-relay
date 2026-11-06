@@ -1,0 +1,13 @@
+[Unit]
+Description=Local Codex GPU Responses compatibility relay
+After=network-online.target
+
+[Service]
+ExecStart=/usr/bin/python3 %h/.codex/gateway-compat/gateway_proxy.py
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+UMask=0077
+
+[Install]
+WantedBy=default.target

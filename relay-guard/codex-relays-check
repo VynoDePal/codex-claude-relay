@@ -1,0 +1,185 @@
+#!/usr/bin/python3
+"""Verifie que les relais Codex (Claude, Gemini, GPU) survivent aux mises a jour de Codex Desktop.
+
+Lance par systemd apres une mise a jour du paquet chatgpt, a l'ouverture de session et chaque jour.
+Usage : codex-relays-check [--quiet] [--no-tests]
+"""
+import glob, json, os, pathlib, re, shutil, subprocess, sys, tempfile, time, urllib.request
+
+HOME = pathlib.Path.home()
+CODEX = HOME / '.codex'
+GATEWAY = CODEX / 'gateway-compat'
+STATE = CODEX / 'relay-guard'
+CONFIG = CODEX / 'config.toml'
+REQUIRED = STATE / 'config-required.toml'
+LOG = STATE / 'last-check.txt'
+APP_VERSION = pathlib.Path('/usr/lib/chatgpt/version')
+CODEX_BIN = '/usr/lib/chatgpt/resources/codex'
+SERVICES = ('codex-model-router', 'codex-gpu-compat')
+REPOS = (GATEWAY, HOME / '.local/share/codex-claude-bridge', HOME / '.local/share/codex-gpu-agents')
+# Types d'elements d'historique deja geres par claude_tools.normalize.
+KNOWN = {'message', 'reasoning', 'function_call', 'custom_tool_call', 'function_call_output',
+         'custom_tool_call_output', 'configuration_update', 'additional_tools', 'tool_search_call',
+         'tool_search_output', 'web_search_call', 'image_generation_call', 'agent_message', 'compaction',
+         'compaction_trigger', 'context_compaction'}
+
+problems, notes, repaired = [], [], []
+
+
+def run(cmd, **kw):
+    return subprocess.run(cmd, capture_output=True, text=True, **kw)
+
+
+def check_services():
+    for name in SERVICES:
+        if run(['systemctl', '--user', 'is-active', name]).stdout.strip() != 'active':
+            run(['systemctl', '--user', 'restart', name])
+            time.sleep(2)
+            if run(['systemctl', '--user', 'is-active', name]).stdout.strip() == 'active':
+                repaired.append(f'service {name} redemarre')
+            else:
+                problems.append(f'le service {name} ne demarre pas (journalctl --user -u {name})')
+    try:
+        with urllib.request.urlopen('http://127.0.0.1:4012/health', timeout=10) as r:
+            health = json.load(r)
+        if health.get('status') != 'ok':
+            problems.append('le routeur repond mais signale un etat anormal')
+        for key in ('claude_models', 'gemini_models'):
+            if not health.get(key):
+                problems.append(f'le routeur ne publie plus {key}')
+        if not health.get('openai_models'):
+            notes.append('catalogue OpenAI encore vide (normal juste apres un redemarrage)')
+    except Exception as exc:
+        problems.append(f'routeur injoignable sur 127.0.0.1:4012 ({type(exc).__name__})')
+
+
+def blocks(text):
+    """Decoupe un TOML en (en-tete, texte du bloc)."""
+    out, head, cur = [], None, []
+    for line in text.splitlines(keepends=True):
+        if re.match(r'^\s*\[', line):
+            out.append((head, ''.join(cur)))
+            head, cur = line.strip(), [line]
+        else:
+            cur.append(line)
+    out.append((head, ''.join(cur)))
+    return out
+
+
+def check_config():
+    if not REQUIRED.exists():
+        problems.append(f'reference de configuration absente : {REQUIRED}')
+        return
+    if not CONFIG.exists():
+        # Installation neuve : Codex n'a pas encore cree config.toml.
+        CONFIG.parent.mkdir(parents=True, exist_ok=True)
+        CONFIG.write_text('')
+        os.chmod(CONFIG, 0o600)
+    current = CONFIG.read_text()
+    missing_top, missing_blocks = [], []
+    for head, body in blocks(REQUIRED.read_text()):
+        if head is None:
+            for line in body.splitlines():
+                m = re.match(r'^\s*([A-Za-z0-9_.-]+)\s*=', line)
+                if not m:
+                    continue
+                found = re.search(r'(?m)^' + re.escape(m.group(1)) + r'\s*=.*$', blocks(current)[0][1])
+                if not found:
+                    missing_top.append(line)
+                elif found.group(0).strip() != line.strip():
+                    problems.append(f'config.toml : {m.group(1)} a change ({found.group(0).strip()})')
+        elif head not in [h for h, _ in blocks(current)]:
+            missing_blocks.append(body)
+    if not (missing_top or missing_blocks):
+        return
+    backup = STATE / ('config.toml.' + time.strftime('%Y%m%d-%H%M%S'))
+    shutil.copy2(CONFIG, backup)
+    new = current
+    if missing_top:
+        first = blocks(current)[0][1]
+        new = '\n'.join(missing_top) + '\n' + new if first.strip() == '' else new.replace(first, first.rstrip('\n') + '\n' + '\n'.join(missing_top) + '\n\n', 1)
+    for body in missing_blocks:
+        new = new.rstrip('\n') + '\n\n' + body.strip('\n') + '\n'
+    fd, tmp = tempfile.mkstemp(dir=CODEX, prefix='.config-')
+    with os.fdopen(fd, 'w') as f:
+        f.write(new)
+    os.chmod(tmp, 0o600)
+    os.replace(tmp, CONFIG)
+    repaired.append(f'config.toml : {len(missing_top)} cle(s) et {len(missing_blocks)} bloc(s) restaures (sauvegarde {backup}) ; redemarrer Codex Desktop')
+
+
+def check_repos():
+    for repo in REPOS:
+        out = run(['git', '-C', str(repo), 'status', '--porcelain']).stdout.strip()
+        if out:
+            notes.append(f'{repo} a des modifications non enregistrees dans git')
+
+
+def check_tests():
+    r = run([sys.executable, '-m', 'unittest', 'discover', '-p', 'test_*.py'], cwd=GATEWAY, timeout=600)
+    tail = (r.stdout + r.stderr).strip().splitlines()[-3:]
+    if r.returncode:
+        problems.append('tests de la passerelle en echec : ' + ' | '.join(tail))
+
+
+def check_history_types():
+    cutoff = time.time() - 3 * 86400
+    seen = {}
+    for path in glob.glob(str(CODEX / 'sessions/*/*/*/rollout-*.jsonl')):
+        if os.path.getmtime(path) < cutoff:
+            continue
+        with open(path, errors='replace') as f:
+            for line in f:
+                if '"response_item"' not in line and '"compacted"' not in line:
+                    continue
+                try:
+                    r = json.loads(line)
+                except ValueError:
+                    continue
+                p = r.get('payload') or {}
+                items = [p] if r.get('type') == 'response_item' else (p.get('replacement_history') or [])
+                for item in items:
+                    kind = item.get('type', 'message') if isinstance(item, dict) else None
+                    if kind and kind not in KNOWN:
+                        seen.setdefault(kind, path)
+    for kind, path in seen.items():
+        problems.append(f"nouveau type d'element Codex '{kind}' (exemple : {path}). Les relais le transmettent en texte ; a adapter.")
+
+
+def versions():
+    app = APP_VERSION.read_text().strip() if APP_VERSION.exists() else '?'
+    cli = run([CODEX_BIN, '--version']).stdout.strip() if os.path.exists(CODEX_BIN) else '?'
+    return app, cli
+
+
+def main():
+    quiet = '--quiet' in sys.argv
+    STATE.mkdir(mode=0o700, exist_ok=True)
+    app, cli = versions()
+    known = STATE / 'last-version.txt'
+    previous = known.read_text().strip() if known.exists() else ''
+    current = f'{app} / {cli}'
+    updated = previous and previous != current
+    check_services()
+    check_config()
+    if '--no-tests' not in sys.argv:
+        check_tests()
+    check_history_types()
+    check_repos()
+    lines = [time.strftime('%Y-%m-%d %H:%M:%S'), f'Codex Desktop {current}' + (f' (avant : {previous})' if updated else '')]
+    lines += ['REPARE : ' + x for x in repaired] + ['PROBLEME : ' + x for x in problems] + ['note : ' + x for x in notes]
+    if not (problems or repaired):
+        lines.append('OK : relais Claude, Gemini et GPU operationnels')
+    LOG.write_text('\n'.join(lines) + '\n')
+    known.write_text(current)
+    print('\n'.join(lines))
+    if (problems or repaired or updated) and shutil.which('notify-send'):
+        title = 'Relais Codex : action requise' if problems else ('Relais Codex repares' if repaired else 'Relais Codex verifies apres mise a jour')
+        body = '\n'.join((problems + repaired)[:4]) or f'Codex Desktop {current} : tout fonctionne.'
+        run(['notify-send', '-a', 'Codex', '-u', 'critical' if problems else 'normal', title, body + f'\nDetail : {LOG}'])
+    return 1 if problems else 0
+
+
+if __name__ == '__main__':
+    sys.exit(main())
+

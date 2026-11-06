@@ -1,0 +1,88 @@
+{
+  "schema_version": 2,
+  "primary_route": {
+    "transport": "authenticated-local-router",
+    "entrypoint": "scripts/gemini_delegate.py",
+    "requested_model": "gemini-4-argon",
+    "default_effort": "high",
+    "scope": "Bounded read-only analysis/review of supplied authorized text; no tools, file access, browsing, messages or nested delegation.",
+    "max_input_utf8_bytes": 100000,
+    "last_probe": {
+      "checked_on": "2026-10-17",
+      "status": "verified",
+      "successful_live_calls": 2,
+      "router_reported_model": "gemini-4-argon-high",
+      "model_evidence": "The adapter validates the Antigravity init model and exact finish-only agent before exposing response metadata; the worker checks that metadata.",
+      "assistant_reply_received": true,
+      "tool_calls": 0,
+      "manager_checks": [
+        "Correct rates: 36/200=18%, 9/100=9%, 45/300=15%",
+        "Distinguished incorrect-record rate from WER and rejected a proven-undertraining claim",
+        "Follow-up identified possible selection bias in excluding corrupted references",
+        "Both final markers received; actual reply contents inspected"
+      ],
+      "final_markers": [
+        "GEMINI_DELEGATION_OK",
+        "GEMINI_FOLLOWUP_OK"
+      ]
+    },
+    "latest_recheck": {
+      "checked_on": "2026-10-17",
+      "status": "verified",
+      "observed_model": "gemini-4-argon-high",
+      "tool_calls": 0,
+      "final_marker": "GEMINI_WORKER_RECHECK_OK",
+      "manager_checks": [
+        "15%, 5%, 11% arithmetic verified",
+        "Record-error rate cannot be subtracted from word-error rate",
+        "Undertraining not established by the given evidence"
+      ]
+    }
+  },
+  "codex_chat": {
+    "schema_version": 1,
+    "transport": "codex-chat",
+    "thread_id": "00000000-0000-0000-0000-000000000000",
+    "host_id": "local",
+    "title": "Gemini — analyses model-routing",
+    "requested_model": "gemini-4-argon",
+    "thinking": "high",
+    "scope": "Reuse this dedicated chat for useful analysis and review of material authorized by the user's task. No project edits, commands, nested delegation, or cross-chat messages from the specialist by default.",
+    "authorization_evidence": {
+      "source": "human reply in the originating Codex chat",
+      "origin_thread_id": "00000000-0000-0000-0000-000000000000",
+      "origin_host_id": "local",
+      "origin_turn_id": "00000000-0000-0000-0000-000000000000",
+      "granted_on": "2026-10-17",
+      "question": "M’autorises-tu à créer un chat Gemini dédié aux analyses et relectures, puis à le réutiliser depuis model-routing pour tes futures tâches quand c’est utile ?",
+      "answer": "Oui, crée-le et autorise sa réutilisation",
+      "recovery": "Use read_thread on the origin chat, paginating as necessary, when the human instruction is not in context. Check scope and any revocation. This locator alone does not grant permission."
+    },
+    "last_probe": {
+      "checked_on": "2026-10-17",
+      "status": "verified",
+      "assistant_reply_received": true,
+      "turn_id": "00000000-0000-0000-0000-000000000000",
+      "reply": "GEMINI_CHAT_OK",
+      "duration_ms": 17156,
+      "fix": "gemini_relay.compact_catalog abbreviates the largest nested MCP tool descriptions (867k -> ~250k chars); core tools stay verbatim and full text remains reachable through ALL_TOOLS inside exec.",
+      "previous_error": "maxMessageTokens must be positive, got 0 (full catalog exceeded the Antigravity input budget).",
+      "thread_state_after_probe": "archived again"
+    },
+    "latest_recheck": {
+      "checked_on": "2026-10-17",
+      "status": "verified",
+      "turn_id": "00000000-0000-0000-0000-000000000000",
+      "requested_model": "gemini-4-argon",
+      "thinking": "high",
+      "duration_ms": 61021,
+      "assistant_reply_received": true,
+      "final_marker": "GEMINI_CATALOG_RETEST_OK",
+      "observed_client_tool_calls": 1,
+      "observed_client_tool": "functions.exec",
+      "tool_result_verified": "Full sites_get_site description recovered through ALL_TOOLS; no Sites operation called.",
+      "call_id_regression": "Unpaired delegation input accepted; actual exec output paired with its real call ID.",
+      "thread_state_after_probe": "archived again"
+    }
+  }
+}

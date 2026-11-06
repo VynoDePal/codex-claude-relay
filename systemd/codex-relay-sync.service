@@ -1,0 +1,11 @@
+[Unit]
+Description=Synchroniser le depot codex-claude-relay avec le relais actif
+After=network-online.target
+
+[Service]
+Type=oneshot
+# Laisse le temps de finir une serie de modifications avant de copier.
+ExecStartPre=/bin/sleep 30
+ExecStart=/usr/bin/python3 %h/.local/bin/codex-relay-sync
+Nice=10
+TimeoutStartSec=20min

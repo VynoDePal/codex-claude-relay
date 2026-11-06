@@ -1,0 +1,18 @@
+[Unit]
+Description=Synchroniser le depot codex-claude-relay quand le relais change
+
+[Path]
+PathChanged=%h/.codex/gateway-compat
+PathChanged=%h/.local/share/codex-claude-bridge
+PathChanged=%h/.codex/skills/model-routing
+PathChanged=%h/.codex/skills/model-routing/scripts
+PathChanged=%h/.local/bin/codex-relays-check
+PathChanged=%h/.local/bin/codex-relay-sync
+PathChanged=%h/.codex/relay-guard/config-required.toml
+PathChanged=%h/.config/systemd/user
+PathChanged=%h/.local/share/codex-gpu-agents
+PathChanged=%h/.local/bin/gpu-agents
+Unit=codex-relay-sync.service
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,10 @@
+[Unit]
+Description=Verification des relais Codex (Claude, Gemini, GPU)
+After=codex-model-router.service
+
+[Service]
+Type=oneshot
+ExecStartPre=/bin/sleep 20
+ExecStart=/usr/bin/python3 %h/.local/bin/codex-relays-check --quiet
+Nice=10
+

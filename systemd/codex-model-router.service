@@ -1,0 +1,11 @@
+[Unit]
+Description=Codex OpenAI and GPU model router
+After=network-online.target
+[Service]
+ExecStart=/usr/bin/python3 %h/.codex/gateway-compat/combined_proxy.py
+Restart=on-failure
+RestartSec=3
+NoNewPrivileges=true
+UMask=0077
+[Install]
+WantedBy=default.target

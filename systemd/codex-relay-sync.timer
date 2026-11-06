@@ -1,0 +1,10 @@
+[Unit]
+Description=Synchronisation horaire du depot codex-claude-relay
+
+[Timer]
+OnStartupSec=5min
+OnUnitActiveSec=1h
+Persistent=true
+
+[Install]
+WantedBy=timers.target

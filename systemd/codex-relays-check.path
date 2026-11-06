@@ -1,0 +1,11 @@
+[Unit]
+Description=Verifier les relais Codex apres une mise a jour de Codex Desktop
+
+[Path]
+PathChanged=/usr/lib/chatgpt/version
+PathChanged=/usr/lib/chatgpt/resources/codex
+Unit=codex-relays-check.service
+
+[Install]
+WantedBy=default.target
+

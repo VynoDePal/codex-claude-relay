@@ -1,0 +1,16 @@
+__pycache__/
+*.pyc
+*-models.json
+jobs/
+sessions.json
+sessions.lock
+*.key
+auth.json
+last-request.json
+
+gpu-gateway.url
+config.json
+logs/
+tasks/
+teams/
+state.lock

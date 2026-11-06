@@ -1,0 +1,11 @@
+[Unit]
+Description=Verification quotidienne des relais Codex
+
+[Timer]
+OnStartupSec=3min
+OnUnitActiveSec=1d
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+

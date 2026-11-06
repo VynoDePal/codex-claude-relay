@@ -1,0 +1,2 @@
+# Copier dans ~/.codex/gpu-gateway.url (chmod 600) avec l'adresse de votre passerelle GPU.
+http://gpu-gateway.example:4000
