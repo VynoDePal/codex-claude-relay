@@ -1,4 +1,5 @@
-"""Local workaround for vllm-project/vllm#56297; no prompt/key logging."""
+"""Local workaround for vllm-project/vllm#56297; no prompt/key logging.
+The GPU gateway URL comes from ~/.codex/gpu-gateway.url or CODEX_GPU_GATEWAY_URL."""
 import copy
 import hmac
 import json
@@ -97,7 +98,7 @@ def create_app(upstream=None, key_path=ROOT/'gateway.key', token_path=ROOT/'gate
             if 'out' in locals() and out.prepared:
                 request.transport.close() if request.transport else None
                 return out
-            return web.json_response({'error':{'message':'GPU gateway unreachable or timed out. Check Tailscale and server availability.'}}, status=502)
+            return web.json_response({'error':{'message':'GPU gateway unreachable or timed out. Check the network route to the gateway and its availability.'}}, status=502)
     app.router.add_route('*', '/{tail:.*}', relay)
     return app
 
