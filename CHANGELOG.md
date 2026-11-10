@@ -5,6 +5,10 @@ Le format s’inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/
 
 ## [Non publié]
 
+### Ajouté
+
+- `interrupt_agent` arrête aussi les commandes shell lancées par un sous-agent Claude ou Gemini interrompu ; `CODEX_INTERRUPT_STOPS_COMMANDS=0` le désactive ([détails](docs/fonctionnement-claude.md#commandes-arrêtées-après-interrupt_agent)).
+
 ## [1.1.0] - 2026-11-10
 
 Sous-agents Codex avec Claude : un parent Claude peut lancer et piloter des enfants Claude ou OpenAI, et le routeur traite 3 requêtes Claude simultanées.

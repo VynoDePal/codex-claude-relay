@@ -98,9 +98,18 @@ Le 10/11/2026, avec le client livré avec Codex Desktop (0.167) et `multi_agent_
 - Un parent Claude avec un enfant `gpt-6-astra` ou `gpt-6.1-sol` : `spawn_agent` et `followup_task` ont rendu les bons codes. Le `send_message` de l’enfant est devenu une note.
 - Un parent `gpt-6.1-sol` avec un enfant Claude : l’erreur attendue, avec les solutions.
 
-### Commande qui continue après `interrupt_agent`
+### Commandes arrêtées après `interrupt_agent`
 
-`interrupt_agent` arrête le tour de l’agent, pas la commande shell qu’il a lancée. Un `sleep 300` a continué après l’interruption, avec un enfant Claude comme avec un enfant entièrement OpenAI. Ce comportement vient de Codex, pas du relais : arrêtez ces processus vous-même si besoin.
+Codex arrête le tour d’un agent interrompu, mais laisse tourner les commandes shell que ce tour a lancées. Pour un sous-agent servi par le relais (Claude ou Gemini), le routeur les arrête lui-même ([relay/claude_interrupts.py](../relay/claude_interrupts.py)) :
+
+- toutes les 2 secondes, il lit les nouvelles lignes des historiques de `~/.codex/sessions` et repère l’événement `turn_aborted` (raison `interrupted`) d’un sous-agent ;
+- il cherche les processus qui portent la variable `CODEX_THREAD_ID` de ce sous-agent et qui ont démarré avant l’interruption, ainsi que leurs descendants ;
+- il leur envoie SIGTERM, puis SIGKILL après 2 secondes s’ils tournent encore. Une commande lancée après l’interruption, par exemple pour un `followup_task`, n’est pas touchée. Les processus de Codex lui-même (`app-server`, `codex-code-mode-host`) sont exclus ;
+- l’historique déjà présent au démarrage du routeur n’est pas relu.
+
+Les commandes d’un sous-agent OpenAI continuent de tourner après `interrupt_agent` : le relais ne sert pas ces agents et n’y touche pas. `CODEX_INTERRUPT_STOPS_COMMANDS=0` désactive ce mécanisme.
+
+Test réel du 10/11 : un enfant Claude lancé sur `sleep 77`, puis interrompu après 25 s. Sans le mécanisme, la commande continuait après l’interruption ; avec, elle a disparu juste après (5 processus arrêtés : l’enveloppe de la sandbox Codex, le shell et `sleep`). Dans le scénario complet, l’enfant interrompu a ensuite traité son `followup_task` et rendu `ALPHA-1`.
 
 ## Diagnostic
 

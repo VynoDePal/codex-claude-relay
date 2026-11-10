@@ -66,6 +66,8 @@ systemctl --user enable --now codex-model-router codex-relays-check.path codex-r
 
   puis redémarrez le routeur avec `systemctl --user restart codex-model-router`. Une valeur plus haute lance plus de sous-agents Claude en parallèle, mais consomme plus vite la limite de votre abonnement Claude.
 
+- **Arrêt des commandes après `interrupt_agent` :** activé par défaut pour les sous-agents Claude et Gemini (voir [Sous-agents](fonctionnement-claude.md#commandes-arrêtées-après-interrupt_agent)). Pour le désactiver, ajoutez `Environment=CODEX_INTERRUPT_STOPS_COMMANDS=0` avec `systemctl --user edit codex-model-router`, puis redémarrez le routeur.
+
 ## Mettre à jour
 
 ```bash

@@ -18,7 +18,8 @@
 | `The encrypted content for item amsg_… could not be verified` pour un sous-agent OpenAI | routeur antérieur au correctif du 10/11 : la consigne en clair d’un parent Claude partait telle quelle vers OpenAI | mettre le relais à jour, puis `systemctl --user restart codex-model-router` |
 | `collab spawn failed: agent thread limit reached` | limite d’agents actifs de Codex | attendre la fin d’un sous-agent, puis relancer |
 | Sous-agents Claude qui attendent avant de démarrer | plus de requêtes Claude que `CODEX_CLAUDE_CONCURRENCY` (3 par défaut) | attendre, ou augmenter la valeur (voir [Installation](installation.md#adapter-à-une-autre-machine)) |
-| Commande d’un sous-agent encore active après `interrupt_agent` | Codex interrompt le tour, pas les commandes lancées | arrêter le processus à la main |
+| Commande d’un sous-agent OpenAI encore active après `interrupt_agent` | Codex interrompt le tour, pas les commandes lancées ; le relais n’arrête que celles des sous-agents Claude et Gemini | arrêter le processus à la main |
+| Commande d’un sous-agent Claude encore active après `interrupt_agent` | routeur pas redémarré depuis la mise à jour, ou `CODEX_INTERRUPT_STOPS_COMMANDS=0` | `systemctl --user restart codex-model-router`, puis consulter le journal avec `journalctl --user -u codex-model-router` (ligne « interrupted sub-agent ») |
 
 ## Commandes utiles
 

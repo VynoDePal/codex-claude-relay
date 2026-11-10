@@ -24,6 +24,8 @@ Le bloc d’outils et l’historique sont envoyés en blocs séparés et stables
 
 Le routeur traite au plus 3 requêtes Claude à la fois, sous-agents compris (`CODEX_CLAUDE_CONCURRENCY`, de 1 à 8). Vers OpenAI, il transforme aussi en texte ordinaire les consignes en clair qu’un parent Claude adresse à un sous-agent OpenAI.
 
+Une tâche de fond du routeur ([claude_interrupts.py](../relay/claude_interrupts.py)) suit les historiques de Codex : quand un sous-agent Claude ou Gemini est interrompu, elle arrête les commandes shell que son tour avait lancées.
+
 ## Le relais Gemini
 
 [relay/gemini_relay.py](../relay/gemini_relay.py) réutilise la préparation de Claude puis appelle Antigravity (`agy`). Gemini ne reçoit pas les images ; au-delà de 160 Ko de conversation, les anciens messages sont résumés par morceaux et mis en cache.
