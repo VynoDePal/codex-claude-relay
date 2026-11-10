@@ -13,6 +13,7 @@ from claude_relay import MODELS as CLAUDE_MODELS, metadata as claude_metadata, r
 from gemini_relay import MODELS as GEMINI_MODELS, metadata as gemini_metadata, relay_gemini, run_cli as run_gemini_cli
 from claude_compaction import PREFIX as CLAUDE_CHECKPOINT, read_summary
 from claude_subagents import unwrap_plain
+from claude_interrupts import InterruptWatcher, enabled as interrupt_stops_enabled
 from gpu_vision import VisionError
 
 def claude_concurrency():
@@ -94,7 +95,7 @@ def gpu_metadata(name):
  }
 
 
-def create_app(root=ROOT,openai=OPENAI,gpu=None,claude_runner=run_cli,gemini_runner=run_gemini_cli):
+def create_app(root=ROOT,openai=OPENAI,gpu=None,claude_runner=run_cli,gemini_runner=run_gemini_cli,interrupt_watch=True):
  if gpu is None:gpu=configured_gpu(root)
  app=web.Application(client_max_size=64*1024*1024)
  cache_dir=root/'gateway-compat';cache_dir.mkdir(parents=True,exist_ok=True)
@@ -108,8 +109,13 @@ def create_app(root=ROOT,openai=OPENAI,gpu=None,claude_runner=run_cli,gemini_run
  async def lifecycle(app):
   async with ClientSession(timeout=ClientTimeout(total=None,sock_connect=10,sock_read=300),trust_env=False,auto_decompress=False) as client:
    state['client']=client
+   # interrupt_agent leaves a relayed sub-agent's commands running; stop them.
+   watcher=asyncio.create_task(InterruptWatcher(root,set(CLAUDE_MODELS)|set(GEMINI_MODELS)).run()) if interrupt_watch and interrupt_stops_enabled() else None
    try:yield
    finally:
+    if watcher:
+     watcher.cancel()
+     with contextlib.suppress(asyncio.CancelledError,Exception):await watcher
     task=state['catalog_refresh']
     if task and not task.done():task.cancel()
     if task:
