@@ -5,9 +5,11 @@ Le format s’inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/
 
 ## [Non publié]
 
-### Ajouté
+## [1.1.1] - 2026-11-10
 
-- `interrupt_agent` arrête aussi les commandes shell lancées par un sous-agent Claude ou Gemini interrompu ; `CODEX_INTERRUPT_STOPS_COMMANDS=0` le désactive ([détails](docs/fonctionnement-claude.md#commandes-arrêtées-après-interrupt_agent)).
+### Corrigé
+
+- `interrupt_agent` laissait tourner les commandes shell lancées par un sous-agent Claude ou Gemini interrompu. Le routeur les arrête maintenant ; `CODEX_INTERRUPT_STOPS_COMMANDS=0` désactive ce mécanisme ([détails](docs/fonctionnement-claude.md#commandes-arrêtées-après-interrupt_agent)).
 
 ## [1.1.0] - 2026-11-10
 
@@ -83,6 +85,7 @@ Première version publique : Claude (Opus 5.5, via Claude Code) comme modèle da
 - Les tokens de Claude sont pris sur l’abonnement Claude ; sa limite de session peut interrompre un tour.
 - Testé sur Ubuntu uniquement.
 
-[Non publié]: https://github.com/VynoDePal/codex-claude-relay/compare/v1.1.0...HEAD
+[Non publié]: https://github.com/VynoDePal/codex-claude-relay/compare/v1.1.1...HEAD
+[1.1.1]: https://github.com/VynoDePal/codex-claude-relay/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/VynoDePal/codex-claude-relay/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/VynoDePal/codex-claude-relay/releases/tag/v1.0.0
