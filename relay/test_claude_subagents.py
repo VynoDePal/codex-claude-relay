@@ -43,6 +43,16 @@ class SubagentTests(unittest.IsolatedAsyncioTestCase):
         self.assertIn('gpt-6.1-sol', str(ctx.exception))
         self.assertIn('claude_code', str(ctx.exception))
 
+    def test_openai_update_becomes_note_instead_of_failing(self):
+        item = delivered(TOKEN, 'MESSAGE', author='/root/rapporteur', recipient='/root')
+        out = recover_agent_messages({'model': 'claude-code-opus', 'input': [item]})
+        dumped = json.dumps(out)
+        self.assertNotIn(TOKEN, dumped)
+        self.assertIn('Unreadable message', dumped)
+        self.assertIn('/root/rapporteur', dumped)
+        self.assertIn('Message Type: MESSAGE', out['input'][0]['content'][0]['text'])
+        prepare(out)
+
     def test_unwrap_keeps_tokens_and_other_items(self):
         msg = {'type': 'message', 'role': 'user', 'content': [{'type': 'input_text', 'text': 'hi'}]}
         payload = {'input': [msg, delivered(TOKEN), delivered('PLAIN', 'MESSAGE')]}

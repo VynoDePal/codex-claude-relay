@@ -49,14 +49,41 @@ def unwrap_plain(payload):
 
 
 def recover_agent_messages(payload):
-    """Make agent messages readable for Claude, or explain why one cannot be."""
+    """Make agent messages readable for Claude, or explain why one cannot be.
+
+    A task (NEW_TASK) written by an OpenAI model is refused: the Claude agent would
+    have nothing to work on. Any other unreadable message (an intermediate update
+    from an OpenAI child) becomes a visible note, because it stays in the history
+    and would otherwise make every later turn of this agent fail.
+    """
     payload, _ = unwrap_plain(payload)
     items = payload.get('input')
-    for item in items if isinstance(items, list) else []:
+    if not isinstance(items, list):
+        return payload
+    out, changed = [], False
+    for item in items:
         if (isinstance(item, dict) and item.get('type') == 'agent_message'
                 and any(isinstance(p, dict) and p.get('type') == 'encrypted_content' for p in item.get('content') or [])):
-            raise VisionError('Claude cannot read this message from ' + str(item.get('author') or 'another agent')
-                              + ': that agent wrote it with an OpenAI model, and Codex keeps such messages only in '
-                              'OpenAI-encrypted form. ' + ALTERNATIVES, 400)
-    return payload
+            author = str(item.get('author') or 'another agent')
+            if message_type(item) == 'NEW_TASK':
+                raise VisionError('Claude cannot read this message from ' + author
+                                  + ': that agent wrote it with an OpenAI model, and Codex keeps such messages only in '
+                                  'OpenAI-encrypted form. ' + ALTERNATIVES, 400)
+            note = ('[Unreadable message: ' + author + ' wrote it with an OpenAI model, and Codex keeps it only in '
+                    'OpenAI-encrypted form. Its content is unknown; do not guess it. Rely on that agent\'s final answer, '
+                    'which Codex delivers readably, or ask it to repeat the information there.]')
+            parts = [p if not (isinstance(p, dict) and p.get('type') == 'encrypted_content')
+                     else {'type': 'input_text', 'text': note} for p in item['content']]
+            item, changed = {**item, 'content': parts}, True
+        out.append(item)
+    return {**payload, 'input': out} if changed else payload
+
+
+def message_type(item):
+    for part in item.get('content') or []:
+        if isinstance(part, dict) and part.get('type') == 'input_text':
+            for line in str(part.get('text', '')).splitlines():
+                if line.startswith('Message Type: '):
+                    return line[len('Message Type: '):].strip()
+    return None
 
