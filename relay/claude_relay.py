@@ -469,7 +469,7 @@ async def relay_claude(request,payload,root,limit,runner=run_cli, *, preparer=No
  legacy=request.path.endswith('/compact')
  try:
   payload=await asyncio.to_thread(recover_compactions,payload,root,request.headers)
-  payload=await asyncio.to_thread(recover_agent_messages,payload,root,request.headers)
+  payload=recover_agent_messages(payload)
   work,compact=prepare_compaction(payload,root,legacy=legacy)
   (preparer or prepare)(work)
  except (ValueError,VisionError,KeyError,TypeError) as exc:return web.json_response({'error':{'message':str(exc).replace('Claude',error_label),'type':'invalid_request_error'}},status=400)

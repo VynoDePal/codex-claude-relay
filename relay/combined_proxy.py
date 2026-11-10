@@ -12,6 +12,7 @@ from ultra_n_relay import RESEARCH_ALIASES, load_config, relay_research, with_re
 from claude_relay import MODELS as CLAUDE_MODELS, metadata as claude_metadata, relay_claude, run_cli
 from gemini_relay import MODELS as GEMINI_MODELS, metadata as gemini_metadata, relay_gemini, run_cli as run_gemini_cli
 from claude_compaction import PREFIX as CLAUDE_CHECKPOINT, read_summary
+from claude_subagents import unwrap_plain
 from gpu_vision import VisionError
 
 def claude_concurrency():
@@ -196,6 +197,8 @@ def create_app(root=ROOT,openai=OPENAI,gpu=None,claude_runner=run_cli,gemini_run
   if name not in native_ids|gpu_ids:raise web.HTTPBadRequest(text='Model is not present in either provider catalog')
   try:payload,restored=restore_claude_checkpoints(payload,root)
   except VisionError as exc:raise web.HTTPBadRequest(text=str(exc)) from None
+  # A Claude parent leaves its message text in encrypted_content; OpenAI rejects it there.
+  payload,unwrapped=unwrap_plain(payload);restored=restored or unwrapped
   is_gpu=name not in native_ids and name in gpu_ids
   if is_gpu:
    payload=normalize_request(payload)
