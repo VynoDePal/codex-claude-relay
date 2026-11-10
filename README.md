@@ -20,6 +20,7 @@ Il contient aussi le connecteur **claude_code**, qui permet à n’importe quel 
 | Passage d’un modèle OpenAI à Claude en cours de conversation (récupération de l’historique local) | [relay/claude_history.py](relay/claude_history.py) |
 | Conversion de l’historique Codex (outils ajoutés, types inconnus, recherche d’outils) | [relay/claude_tools.py](relay/claude_tools.py) |
 | Catalogue d’outils allégé (813 000 → 215 000 caractères) | [relay/tool_catalog.py](relay/tool_catalog.py) |
+| Sous-agents Codex avec Claude comme parent ou enfant, 3 requêtes Claude simultanées par défaut | [relay/claude_subagents.py](relay/claude_subagents.py) |
 | Délégation de tâches de codage à Claude Code (connecteur MCP) | [claude-code-bridge/](claude-code-bridge/) |
 | Délégation à des exécutants GLM ou DeepSeek, le modèle de Codex restant manager (connecteur MCP) | [gpu-agents/](gpu-agents/) |
 | Contrôle et réparation après les mises à jour de Codex Desktop | [relay-guard/](relay-guard/), [systemd/](systemd/) |

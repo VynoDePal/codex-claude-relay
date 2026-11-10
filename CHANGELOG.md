@@ -12,6 +12,17 @@ Le format s’inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/
 - Code de conduite (`CODE_OF_CONDUCT.md`, Contributor Covenant 2.1) et guide de contribution (`CONTRIBUTING.md`).
 - Politique de sécurité (`SECURITY.md`) et signalement privé des vulnérabilités ; modèle d’issue pour les questions.
 - Démo animée dans le README (`docs/images/demo.gif`) et topics GitHub.
+- Sous-agents avec Claude : un parent Claude peut lancer et piloter des enfants Claude ou OpenAI, et reçoit un mode d’emploi des outils de sous-agents ([détails](docs/fonctionnement-claude.md#sous-agents)).
+- Variable `CODEX_CLAUDE_CONCURRENCY` (1 à 8) pour le nombre de requêtes Claude simultanées.
+
+### Modifié
+
+- 3 requêtes Claude simultanées par défaut, au lieu de 2.
+
+### Corrigé
+
+- Un sous-agent OpenAI lancé par un parent Claude échouait avec « The encrypted content … could not be verified ».
+- Un message intermédiaire d’un sous-agent OpenAI faisait échouer tous les tours suivants d’un parent Claude ; il devient une note lisible.
 
 ## [1.0.0] - 2026-11-06
 

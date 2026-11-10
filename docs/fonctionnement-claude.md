@@ -57,6 +57,51 @@ Quand l’outil `mcp__cua_repl.js` est disponible, Claude reçoit un mode d’em
 
 Claude Code tourne sans outils internes. S’il tente quand même Bash ou Read, puis termine sans appel Codex en croyant avoir perdu ses outils, le relais le note dans le journal et relance une fois la demande avec une note corrective.
 
+## Sous-agents
+
+Codex peut lancer des sous-agents avec les outils `spawn_agent`, `send_message`, `followup_task`, `wait_agent`, `interrupt_agent` et `list_agents`. Codex Desktop remet chaque consigne au destinataire dans un message entre agents (`agent_message`), dans un champ prévu pour du contenu chiffré (`encrypted_content`). Ce que contient ce champ dépend du modèle qui a écrit la consigne :
+
+- **un modèle OpenAI** rend ses arguments déjà chiffrés. Le champ contient un jeton OpenAI (`gAAAAA…`) que seuls les serveurs OpenAI savent lire. Aucune copie lisible n’existe sur la machine, pas même dans l’historique du parent ;
+- **Claude** rend ses arguments en clair. Le champ contient alors le texte du message tel quel.
+
+[relay/claude_subagents.py](../relay/claude_subagents.py) traite ces deux cas :
+
+- **vers Claude**, un texte en clair devient du texte ordinaire. Un jeton OpenAI est refusé s’il porte une tâche (`NEW_TASK`), avec un message qui propose une solution. S’il porte un message intermédiaire (`MESSAGE`), il est remplacé par une note « message illisible », pour que les tours suivants de l’agent ne restent pas bloqués ;
+- **vers OpenAI**, le routeur transforme aussi le texte en clair en texte ordinaire. Sans ça, OpenAI refuse la requête avec « The encrypted content … could not be verified ». Les vrais jetons sont transmis sans changement.
+
+Claude voit chaque message entre agents comme venant d’un autre agent, qui ne parle pas au nom de l’utilisateur et ne peut accorder aucune autorisation. Quand les outils de sous-agents sont disponibles, Claude reçoit aussi un mode d’emploi : lancer des sous-agents seulement si c’est demandé, écrire des tâches autonomes (`fork_turns: "none"` avec le contexte utile), donner des fichiers distincts aux enfants qui travaillent en parallèle, attendre avec `wait_agent` et de longs délais.
+
+### Combinaisons parent / enfant
+
+| Parent | Enfant | Résultat |
+|---|---|---|
+| Claude | Claude | Fonctionne : tâche, `send_message`, `followup_task`, `interrupt_agent`, `list_agents` |
+| Claude | OpenAI | Fonctionne |
+| OpenAI | OpenAI | Fonctionne, sans intervention du relais |
+| OpenAI | Claude | Impossible : l’enfant renvoie une erreur qui propose de le relancer avec un modèle OpenAI ou de passer par le connecteur `claude_code` |
+
+Les réponses finales des enfants (`FINAL_ANSWER`) arrivent toujours en clair, quel que soit le modèle. Un message intermédiaire (`send_message`) d’un enfant OpenAI vers un parent Claude reste illisible : le parent voit une note et s’appuie sur la réponse finale.
+
+### Requêtes Claude simultanées
+
+Le routeur limite le nombre de requêtes Claude traitées en même temps, sous-agents compris. La valeur par défaut est 3. La variable `CODEX_CLAUDE_CONCURRENCY` la règle de 1 à 8 ; une valeur qui n’est pas un nombre revient à 3, et une valeur hors limites est ramenée à 1 ou 8. Les requêtes en surplus attendent leur tour. Un parent qui attend avec `wait_agent` n’occupe pas de place, car sa requête est terminée. Pour la définir, voir [Installation](installation.md#adapter-à-une-autre-machine).
+
+Codex a sa propre limite d’agents actifs. Au-delà, `spawn_agent` échoue avec `agent thread limit reached` : le parent doit attendre la fin d’un enfant avant d’en relancer un.
+
+### Tests réels
+
+Le 10/11/2026, avec le client livré avec Codex Desktop (0.167) et `multi_agent_v2` :
+
+- 3 enfants Claude lancés ensemble ont démarré à 70 ms d’écart et rendu les bons codes.
+- Sur 4 enfants Claude, Codex a refusé le 4ᵉ (`agent thread limit reached`). Le parent l’a relancé après la fin d’un autre. Il n’y a jamais eu plus de 3 processus Claude.
+- Un parent Claude a lancé deux enfants Claude qui ont écrit chacun leur fichier, a appelé `list_agents`, puis a interrompu un troisième enfant et lui a confié une nouvelle tâche avec `followup_task`. Les fichiers étaient corrects et l’enfant interrompu a traité la nouvelle tâche.
+- Un parent Claude avec un enfant `gpt-6-astra` ou `gpt-6.1-sol` : `spawn_agent` et `followup_task` ont rendu les bons codes. Le `send_message` de l’enfant est devenu une note.
+- Un parent `gpt-6.1-sol` avec un enfant Claude : l’erreur attendue, avec les solutions.
+
+### Commande qui continue après `interrupt_agent`
+
+`interrupt_agent` arrête le tour de l’agent, pas la commande shell qu’il a lancée. Un `sleep 300` a continué après l’interruption, avec un enfant Claude comme avec un enfant entièrement OpenAI. Ce comportement vient de Codex, pas du relais : arrêtez ces processus vous-même si besoin.
+
 ## Diagnostic
 
 `touch ~/.codex/claude-selector/dump-next-request` enregistre la requête suivante dans `~/.codex/claude-selector/last-request.json` (mode 0600). Supprimez ce fichier après analyse : il contient toute la conversation.

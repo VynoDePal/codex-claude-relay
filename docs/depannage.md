@@ -13,6 +13,12 @@
 | `503 Unable to determine the installed Codex version`, ou tests du catalogue en échec ou bloqués sur une machine sans Codex Desktop | le routeur ne trouve pas le binaire `codex` pour connaître la version du client | installer Codex Desktop, ou définir `CODEX_CLIENT_VERSION` (voir [Installation](installation.md#adapter-à-une-autre-machine)) |
 | `You've hit your session limit` | limite d’abonnement Claude | attendre la réinitialisation indiquée |
 | Réponses très lentes | effort xhigh/max ou contexte très long | passer en high, ou repartir d’un nouveau chat |
+| `Claude cannot read this message from …: that agent wrote it with an OpenAI model` | un parent OpenAI a confié une tâche à un sous-agent Claude ; OpenAI a chiffré la consigne | relancer l’enfant avec un modèle OpenAI, ou déléguer par le connecteur `claude_code` (voir [Sous-agents](fonctionnement-claude.md#sous-agents)) |
+| `[Unreadable message: …]` dans un chat Claude | message intermédiaire d’un sous-agent OpenAI | normal : s’appuyer sur sa réponse finale, toujours lisible |
+| `The encrypted content for item amsg_… could not be verified` pour un sous-agent OpenAI | routeur antérieur au correctif du 10/11 : la consigne en clair d’un parent Claude partait telle quelle vers OpenAI | mettre le relais à jour, puis `systemctl --user restart codex-model-router` |
+| `collab spawn failed: agent thread limit reached` | limite d’agents actifs de Codex | attendre la fin d’un sous-agent, puis relancer |
+| Sous-agents Claude qui attendent avant de démarrer | plus de requêtes Claude que `CODEX_CLAUDE_CONCURRENCY` (3 par défaut) | attendre, ou augmenter la valeur (voir [Installation](installation.md#adapter-à-une-autre-machine)) |
+| Commande d’un sous-agent encore active après `interrupt_agent` | Codex interrompt le tour, pas les commandes lancées | arrêter le processus à la main |
 
 ## Commandes utiles
 

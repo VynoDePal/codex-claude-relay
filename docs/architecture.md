@@ -14,12 +14,15 @@ Pour chaque requête vers Claude, [relay/claude_relay.py](../relay/claude_relay.
 
 1. récupère l’historique local si la conversation vient d’un modèle OpenAI ([claude_history.py](../relay/claude_history.py)) ;
 2. lit les résumés de compaction propres au relais ([claude_compaction.py](../relay/claude_compaction.py)) ;
-3. convertit l’historique Codex en messages ([claude_tools.py](../relay/claude_tools.py), [gpu_vision.py](../relay/gpu_vision.py)) ;
-4. allège le catalogue d’outils ([tool_catalog.py](../relay/tool_catalog.py)), dédoublonne les blocs d’instructions répétés et raccourcit les sorties du navigateur ;
-5. lance `claude -p --model claude-opus-5-5 --tools "" --json-schema …` : Claude Code tourne sans ses outils internes et doit rendre `{text, calls}` ;
-6. convertit la réponse en événements Responses (texte + appels d’outils) que Codex exécute.
+3. rend lisibles les messages entre agents écrits par Claude et signale ceux qu’un modèle OpenAI a chiffrés ([claude_subagents.py](../relay/claude_subagents.py)) ;
+4. convertit l’historique Codex en messages ([claude_tools.py](../relay/claude_tools.py), [gpu_vision.py](../relay/gpu_vision.py)) ;
+5. allège le catalogue d’outils ([tool_catalog.py](../relay/tool_catalog.py)), dédoublonne les blocs d’instructions répétés et raccourcit les sorties du navigateur ;
+6. lance `claude -p --model claude-opus-5-5 --tools "" --json-schema …` : Claude Code tourne sans ses outils internes et doit rendre `{text, calls}` ;
+7. convertit la réponse en événements Responses (texte + appels d’outils) que Codex exécute.
 
 Le bloc d’outils et l’historique sont envoyés en blocs séparés et stables, pour que le cache de prompt de Claude réutilise le début de la requête d’un tour à l’autre.
+
+Le routeur traite au plus 3 requêtes Claude à la fois, sous-agents compris (`CODEX_CLAUDE_CONCURRENCY`, de 1 à 8). Vers OpenAI, il transforme aussi en texte ordinaire les consignes en clair qu’un parent Claude adresse à un sous-agent OpenAI.
 
 ## Le relais Gemini
 

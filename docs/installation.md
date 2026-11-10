@@ -57,6 +57,15 @@ systemctl --user enable --now codex-model-router codex-relays-check.path codex-r
 
   La valeur doit avoir la forme `x.y.z`, avec un suffixe facultatif comme `-alpha.3` ; une valeur mal formée est ignorée. Ne la définissez pas sur une machine où Codex Desktop est installé : elle remplacerait la version détectée et ne suivrait plus ses mises à jour. La [GitHub Action](../.github/workflows/ci.yml) l’utilise parce que son serveur n’a pas Codex Desktop.
 
+- **Requêtes Claude simultanées :** le routeur traite au plus 3 requêtes Claude à la fois, sous-agents compris (voir [Sous-agents](fonctionnement-claude.md#sous-agents)). Pour changer cette valeur, de 1 à 8, ajoutez la variable `CODEX_CLAUDE_CONCURRENCY` avec `systemctl --user edit codex-model-router` :
+
+  ```ini
+  [Service]
+  Environment=CODEX_CLAUDE_CONCURRENCY=4
+  ```
+
+  puis redémarrez le routeur avec `systemctl --user restart codex-model-router`. Une valeur plus haute lance plus de sous-agents Claude en parallèle, mais consomme plus vite la limite de votre abonnement Claude.
+
 ## Mettre à jour
 
 ```bash
