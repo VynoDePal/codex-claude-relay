@@ -5,6 +5,7 @@ from gpu_vision import to_chat,from_chat,response_events,VisionError,tool_alias
 from claude_tools import normalize as normalize_claude, SEARCH_ALIAS
 from claude_compaction import prepare_compaction, checkpoint, summary_text
 from claude_history import recover_compactions
+from claude_subagents import recover_agent_messages
 from tool_catalog import slim_catalog
 
 MODELS={'claude-code-opus':'claude-opus-5-5'}
@@ -147,6 +148,16 @@ def fit_image_info(url):
 
 def fit_image(url):
  return fit_image_info(url)[0]
+
+def subagent_guidance(mapping):
+ """Usage notes for the Codex collaboration tools, only when they are supplied."""
+ if not any(i.get('namespace')=='collaboration' and i.get('name')=='spawn_agent' for i in mapping.values()):return ''
+ return (' Sub-agents: the collaboration tools (spawn_agent, followup_task, send_message, wait_agent, interrupt_agent, list_agents) '
+  'start and steer other Codex agents. Use them only when the user or applicable instructions ask for sub-agents, delegation or parallel agent work. '
+  'Write each task self-contained: fork_turns "none" with the goal, files, scope, constraints, acceptance criteria and verification commands. '
+  'Omit model to keep Claude for the child; set an OpenAI model (for example gpt-6.1-sol) only when the child must exchange messages with OpenAI agents, '
+  'because Claude cannot read messages written by OpenAI agents. Give parallel children disjoint files. '
+  'Wait with wait_agent using long timeouts (minutes) instead of polling, and verify each result before reporting it.')
 
 def browser_guidance(mapping,vision=True):
  """Usage notes for the Codex browser tool, only when it is supplied."""
@@ -368,7 +379,7 @@ def cli_request(payload, *, preparer=None, protocol=CLAUDE_PROTOCOL, vision=True
  fmt=(payload.get('text') or {}).get('format')
  if fmt and fmt.get('type')!='text':settings['output_format']=fmt
  if settings:blocks.append({'type':'text','text':'Settings for this response only:\n'+json.dumps(settings,ensure_ascii=False)})
- return '\n\n'.join(trusted+[protocol+browser_guidance(mapping,vision)]),blocks,mapping
+ return '\n\n'.join(trusted+[protocol+browser_guidance(mapping,vision)+subagent_guidance(mapping)]),blocks,mapping
 
 def last_call_usage(events):
  """Usage of the last Claude API call in a stream-json run (its real context size)."""
@@ -458,6 +469,7 @@ async def relay_claude(request,payload,root,limit,runner=run_cli, *, preparer=No
  legacy=request.path.endswith('/compact')
  try:
   payload=await asyncio.to_thread(recover_compactions,payload,root,request.headers)
+  payload=await asyncio.to_thread(recover_agent_messages,payload,root,request.headers)
   work,compact=prepare_compaction(payload,root,legacy=legacy)
   (preparer or prepare)(work)
  except (ValueError,VisionError,KeyError,TypeError) as exc:return web.json_response({'error':{'message':str(exc).replace('Claude',error_label),'type':'invalid_request_error'}},status=400)

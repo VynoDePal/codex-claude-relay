@@ -13,6 +13,12 @@ from claude_relay import MODELS as CLAUDE_MODELS, metadata as claude_metadata, r
 from gemini_relay import MODELS as GEMINI_MODELS, metadata as gemini_metadata, relay_gemini, run_cli as run_gemini_cli
 from claude_compaction import PREFIX as CLAUDE_CHECKPOINT, read_summary
 from gpu_vision import VisionError
+
+def claude_concurrency():
+ """Simultaneous Claude requests (CODEX_CLAUDE_CONCURRENCY, default 3, 1 to 8). Sub-agents share this limit."""
+ try:value=int(os.environ.get('CODEX_CLAUDE_CONCURRENCY','3'))
+ except ValueError:value=3
+ return min(8,max(1,value))
 STATE=web.AppKey('state',dict)
 ROOT=pathlib.Path.home()/'.codex'
 OPENAI='https://chatgpt.com/backend-api/codex'
@@ -91,7 +97,7 @@ def create_app(root=ROOT,openai=OPENAI,gpu=None,claude_runner=run_cli,gemini_run
  if gpu is None:gpu=configured_gpu(root)
  app=web.Application(client_max_size=64*1024*1024)
  cache_dir=root/'gateway-compat';cache_dir.mkdir(parents=True,exist_ok=True)
- state={'openai':[],'gpu':[],'updated':0,'client_version':None,'lock':asyncio.Lock(),'research_lock':asyncio.Lock(),'claude_limit':asyncio.Semaphore(2),'gemini_limit':asyncio.Semaphore(2),'catalog_refresh':None}
+ state={'openai':[],'gpu':[],'updated':0,'client_version':None,'lock':asyncio.Lock(),'research_lock':asyncio.Lock(),'claude_limit':asyncio.Semaphore(claude_concurrency()),'gemini_limit':asyncio.Semaphore(2),'catalog_refresh':None}
  for kind in (['openai','gpu'] if gpu else ['openai']):
   try:state[kind]=json.loads((cache_dir/(kind+'-models.json')).read_text())
   except (OSError,ValueError):pass
