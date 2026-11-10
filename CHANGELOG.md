@@ -5,6 +5,10 @@ Le format s’inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/
 
 ## [Non publié]
 
+## [1.1.0] - 2026-11-10
+
+Sous-agents Codex avec Claude : un parent Claude peut lancer et piloter des enfants Claude ou OpenAI, et le routeur traite 3 requêtes Claude simultanées.
+
 ### Ajouté
 
 - `CHANGELOG.md`.
@@ -75,5 +79,6 @@ Première version publique : Claude (Opus 5.5, via Claude Code) comme modèle da
 - Les tokens de Claude sont pris sur l’abonnement Claude ; sa limite de session peut interrompre un tour.
 - Testé sur Ubuntu uniquement.
 
-[Non publié]: https://github.com/VynoDePal/codex-claude-relay/compare/v1.0.0...HEAD
+[Non publié]: https://github.com/VynoDePal/codex-claude-relay/compare/v1.1.0...HEAD
+[1.1.0]: https://github.com/VynoDePal/codex-claude-relay/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/VynoDePal/codex-claude-relay/releases/tag/v1.0.0
