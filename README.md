@@ -2,6 +2,10 @@
 
 [![CI](https://github.com/VynoDePal/codex-claude-relay/actions/workflows/ci.yml/badge.svg)](https://github.com/VynoDePal/codex-claude-relay/actions/workflows/ci.yml) [![Licence MIT](https://img.shields.io/badge/licence-MIT-blue.svg)](LICENSE)
 
+![Démo : santé du routeur, catalogue de modèles avec Claude, contrôle des relais et tests](docs/images/demo.gif)
+
+*La démo rejoue les sorties réelles des commandes : santé du routeur, catalogue des modèles servis, `codex-relays-check` et suites de tests.*
+
 Ce dépôt contient la configuration complète qui permet d’utiliser **Claude (Opus 5.5, via Claude Code)** comme modèle dans le sélecteur de Codex Desktop, avec tous les outils de Codex : shell, édition de fichiers, connecteurs, navigateur intégré, Google Chrome, délégation.
 
 Il contient aussi le connecteur **claude_code**, qui permet à n’importe quel modèle de Codex de déléguer une tâche de codage à Claude Code, et un contrôle automatique qui répare la configuration après les mises à jour de Codex Desktop.
