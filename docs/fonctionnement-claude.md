@@ -4,7 +4,7 @@ Chaque section décrit un problème réellement rencontré et la façon dont le 
 
 ## Modèle et efforts
 
-- Slug `claude-code-opus`, affiché « Claude », appelle `claude-opus-5-5`.
+- Slug `claude-code-opus`, affiché « Claude Opus 5.5 », appelle `claude-opus-5-5`.
 - Efforts proposés : low, medium, high, xhigh, max. `ultra` n’existe pas pour Claude.
 - Fenêtre annoncée à Codex : 1 000 000 tokens.
 

@@ -2,7 +2,8 @@
 
 | Symptôme | Cause probable | Que faire |
 |---|---|---|
-| « Claude » absent du sélecteur | routeur arrêté ou `openai_base_url` perdu après une mise à jour | `codex-relays-check`, puis redémarrer Codex Desktop |
+| « Claude Opus 5.5 » absent du sélecteur | routeur arrêté ou `openai_base_url` perdu après une mise à jour | `codex-relays-check`, puis redémarrer Codex Desktop |
+| Le sélecteur affiche encore « Claude » | catalogue en cache dans Codex Desktop, ou routeur pas redémarré | `systemctl --user restart codex-model-router`, puis redémarrer Codex Desktop |
 | `Unsupported image-conversation item: …` | nouveau type d’élément Codex | le relais le transmet désormais en texte ; signalez le type à corriger |
 | Compaction toutes les quelques minutes | ancien comptage cumulé des tokens | vérifier que le relais est à jour |
 | `history exceeds the recovery size limit` | historique local de plus de 4 Go | augmenter `MAX_READ_BYTES` dans `claude_history.py` ou repartir d’un résumé |

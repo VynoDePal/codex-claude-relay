@@ -5,6 +5,10 @@ Le format s’inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/
 
 ## [Non publié]
 
+### Modifié
+
+- Le sélecteur de modèles affiche « Claude Opus 5.5 » au lieu de « Claude ». Le slug `claude-code-opus` et les efforts (low à max) ne changent pas.
+
 ## [1.1.1] - 2026-11-10
 
 ### Corrigé
