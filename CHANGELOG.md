@@ -5,6 +5,10 @@ Le format s’inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/
 
 ## [Non publié]
 
+### Ajouté
+
+- Modèle « Claude Fable » (`claude-code-fable`, appelle `claude-fable-5-1`) dans le sélecteur, avec ses propres efforts (low à max, medium par défaut).
+
 ### Modifié
 
 - Le sélecteur de modèles affiche « Claude Opus 5.5 » au lieu de « Claude ». Le slug `claude-code-opus` et les efforts (low à max) ne changent pas.
