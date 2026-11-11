@@ -5,21 +5,18 @@ Le format s’inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/
 
 ## [Non publié]
 
-### Ajouté
-
-- Modèle « Claude Sonnet » (`claude-code-sonnet`, appelle `claude-sonnet-5-5`) dans le sélecteur, avec ses propres efforts (low à max, medium par défaut).
-
 ## [1.2.0] - 2026-11-11
 
-Deux modèles Claude dans le sélecteur : « Claude Opus 5.5 », nouveau nom de « Claude », et « Claude Fable » (`claude-fable-5-2`).
+Trois modèles Claude dans le sélecteur : « Claude Opus » (nouveau nom de « Claude », `claude-opus-5-5`), « Claude Fable » (`claude-fable-5-2`) et « Claude Sonnet » (`claude-sonnet-5-5`).
 
 ### Ajouté
 
 - Modèle « Claude Fable » (`claude-code-fable`, appelle `claude-fable-5-2`) dans le sélecteur, avec ses propres efforts (low à max, medium par défaut).
+- Modèle « Claude Sonnet » (`claude-code-sonnet`, appelle `claude-sonnet-5-5`) dans le sélecteur, avec ses propres efforts (low à max, medium par défaut).
 
 ### Modifié
 
-- Le sélecteur de modèles affiche « Claude Opus 5.5 » au lieu de « Claude ». Le slug `claude-code-opus` et les efforts (low à max) ne changent pas.
+- Le sélecteur de modèles affiche « Claude Opus » au lieu de « Claude ». Le slug `claude-code-opus`, le modèle `claude-opus-5-5` et les efforts (low à max) ne changent pas.
 
 ## [1.1.1] - 2026-11-10
 

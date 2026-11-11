@@ -6,7 +6,7 @@ Chaque section décrit un problème réellement rencontré et la façon dont le 
 
 | Slug | Affiché | Modèle Claude Code | Efforts | Par défaut |
 |---|---|---|---|---|
-| `claude-code-opus` | Claude Opus 5.5 | `claude-opus-5-5` | low, medium, high, xhigh, max | medium |
+| `claude-code-opus` | Claude Opus | `claude-opus-5-5` | low, medium, high, xhigh, max | medium |
 | `claude-code-fable` | Claude Fable | `claude-fable-5-2` | low, medium, high, xhigh, max | medium |
 | `claude-code-sonnet` | Claude Sonnet | `claude-sonnet-5-5` | low, medium, high, xhigh, max | medium |
 

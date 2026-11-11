@@ -14,7 +14,7 @@ Il contient aussi le connecteur **claude_code**, qui permet à n’importe quel 
 
 | Fonction | Où |
 |---|---|
-| Modèles « Claude Opus 5.5 », « Claude Fable » et « Claude Sonnet » dans le sélecteur de Codex, efforts low à max | [relay/claude_relay.py](relay/claude_relay.py) |
+| Modèles « Claude Opus », « Claude Fable » et « Claude Sonnet » dans le sélecteur de Codex, efforts low à max | [relay/claude_relay.py](relay/claude_relay.py) |
 | Routeur local qui sert OpenAI, la passerelle GPU, Claude et Gemini sur 127.0.0.1:4012 | [relay/combined_proxy.py](relay/combined_proxy.py) |
 | Compaction des longues conversations par Claude, avec résumé chiffré localement | [relay/claude_compaction.py](relay/claude_compaction.py) |
 | Passage d’un modèle OpenAI à Claude en cours de conversation (récupération de l’historique local) | [relay/claude_history.py](relay/claude_history.py) |
