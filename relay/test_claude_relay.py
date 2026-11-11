@@ -27,7 +27,12 @@ class Tests(unittest.TestCase):
   self.assertEqual(r['usage']['input_tokens'],9);self.assertEqual(r['output'][0]['phase'],'final_answer')
   self.assertIn('claude-sonnet-5',r['metadata']['claude_models_used'])
  def test_catalog_all_visible(self):
-  self.assertEqual([m['slug'] for m in metadata()],['claude-code-opus','claude-code-fable']);self.assertTrue(all(m['visibility']=='list' for m in metadata()))
+  self.assertEqual([m['slug'] for m in metadata()],['claude-code-opus','claude-code-fable','claude-code-sonnet']);self.assertTrue(all(m['visibility']=='list' for m in metadata()))
+ def test_sonnet_profile(self):
+  sonnet=next(m for m in metadata() if m['slug']=='claude-code-sonnet')
+  self.assertEqual(sonnet['display_name'],'Claude Sonnet');self.assertEqual(sonnet['default_reasoning_level'],'medium')
+  self.assertEqual([l['effort'] for l in sonnet['supported_reasoning_levels']],['low','medium','high','xhigh','max'])
+  self.assertIn('Claude Sonnet 5.5',sonnet['description'])
  def test_fable_profile(self):
   fable=next(m for m in metadata() if m['slug']=='claude-code-fable')
   self.assertEqual(fable['display_name'],'Claude Fable');self.assertEqual(fable['default_reasoning_level'],'medium')

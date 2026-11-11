@@ -46,7 +46,7 @@ class GeminiCatalogTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(gemini[0]['display_name'], 'Gemini 4 Argon')
                     self.assertEqual(gemini[0]['slug'], 'gemini-4-argon')
                     self.assertEqual([e['effort'] for e in gemini[0]['supported_reasoning_levels']], ['low', 'medium', 'high'])
-                    self.assertEqual({m['slug'] for m in models}, {'gpt-test', 'glm-5.3-flash', 'deepseek-v4.1', 'claude-code-opus', 'claude-code-fable', 'gemini-4-argon'})
+                    self.assertEqual({m['slug'] for m in models}, {'gpt-test', 'glm-5.3-flash', 'deepseek-v4.1', 'claude-code-opus', 'claude-code-fable', 'claude-code-sonnet', 'gemini-4-argon'})
 
     async def test_argon_routes_locally_without_waiting_for_other_providers(self):
         calls = []
