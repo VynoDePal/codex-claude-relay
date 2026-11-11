@@ -32,7 +32,7 @@ def reasoning_effort(payload):
  return effort
 
 def metadata():
- return [{'slug':slug,'display_name':'Claude',
+ return [{'slug':slug,'display_name':'Claude Opus 5.5',
  'description':'Claude Opus 5.5 via Claude Code ; outils et permissions gérés par Codex.',
  'base_instructions':'You are a coding assistant powered by Claude inside Codex. Help complete the user request. Follow project instructions and configured permissions. Use the available Codex tools when needed; verify edits and tests before claiming success.',
  'default_reasoning_level':'medium','supported_reasoning_levels':[{'effort':effort,'description':'Effort '+effort+' de Claude Opus 5.5.'} for effort in EFFORTS],

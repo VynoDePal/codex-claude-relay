@@ -96,7 +96,9 @@ class ClaudeDesktopTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(response.status, 200)
                     models = (await response.json())['models']
                     self.assertEqual([m['slug'] for m in models], ['gpt-test', 'glm-5.3-flash', 'deepseek-v4.1', 'claude-code-opus', 'gemini-4-argon'])
-                    self.assertEqual(next(m for m in models if m['slug'] == 'claude-code-opus')['display_name'], 'Claude')
+                    claude = next(m for m in models if m['slug'] == 'claude-code-opus')
+                    self.assertEqual(claude['display_name'], 'Claude Opus 5.5')
+                    self.assertEqual([l['effort'] for l in claude['supported_reasoning_levels']], ['low', 'medium', 'high', 'xhigh', 'max'])
 
     async def test_cli_uses_pinned_opus_effort_and_codex_remains_tool_executor(self):
         with tempfile.TemporaryDirectory() as temp:
