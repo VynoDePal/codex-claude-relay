@@ -130,7 +130,7 @@ print(json.dumps({"type":"result","structured_output":{"text":"ok","calls":[]},"
             with patch('claude_relay.pathlib.Path.home', return_value=root):
                 await run_cli(fable, root)
             args = json.loads((root / 'claude-selector/observed.json').read_text())['args']
-            self.assertEqual(args[args.index('--model') + 1], 'claude-fable-5-1')
+            self.assertEqual(args[args.index('--model') + 1], 'claude-fable-5-2')
             self.assertEqual(args[args.index('--effort') + 1], 'max')
 
     def test_custom_tool_grammar_reaches_the_model_with_namespace(self):

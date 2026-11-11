@@ -32,5 +32,5 @@ class Tests(unittest.TestCase):
   fable=next(m for m in metadata() if m['slug']=='claude-code-fable')
   self.assertEqual(fable['display_name'],'Claude Fable');self.assertEqual(fable['default_reasoning_level'],'medium')
   self.assertEqual([l['effort'] for l in fable['supported_reasoning_levels']],['low','medium','high','xhigh','max'])
-  self.assertIn('Claude Fable 5.1',fable['description'])
+  self.assertIn('Claude Fable 5.2',fable['description'])
 if __name__=='__main__':unittest.main()
