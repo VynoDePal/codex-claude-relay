@@ -4,7 +4,7 @@
 
 Codex Desktop est configuré avec `openai_base_url = "http://127.0.0.1:4012/v1"`. Toutes ses requêtes passent donc par [relay/combined_proxy.py](../relay/combined_proxy.py), un serveur aiohttp lancé par le service `codex-model-router`.
 
-- `GET /v1/models` : fusionne le catalogue OpenAI, les modèles de la passerelle GPU, Claude (`claude-code-opus`, affiché « Claude Opus 5.5 », et `claude-code-fable`, affiché « Claude Fable ») et Gemini (`gemini-4-argon`).
+- `GET /v1/models` : fusionne le catalogue OpenAI, les modèles de la passerelle GPU, Claude (`claude-code-opus`, affiché « Claude Opus 5.5 » ; `claude-code-fable`, affiché « Claude Fable » ; `claude-code-sonnet`, affiché « Claude Sonnet ») et Gemini (`gemini-4-argon`).
 - `POST /v1/responses` : envoie la requête au bon fournisseur selon le modèle.
 - L’authentification reprend le jeton Codex de `~/.codex/auth.json` ; une requête sans ce jeton est refusée.
 

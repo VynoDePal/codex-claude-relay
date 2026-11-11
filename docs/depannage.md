@@ -2,7 +2,7 @@
 
 | Symptôme | Cause probable | Que faire |
 |---|---|---|
-| « Claude Opus 5.5 » ou « Claude Fable » absent du sélecteur | routeur arrêté, routeur pas redémarré depuis la mise à jour, ou `openai_base_url` perdu après une mise à jour de Codex | `codex-relays-check`, `systemctl --user restart codex-model-router`, puis redémarrer Codex Desktop |
+| « Claude Opus 5.5 », « Claude Fable » ou « Claude Sonnet » absent du sélecteur | routeur arrêté, routeur pas redémarré depuis la mise à jour, ou `openai_base_url` perdu après une mise à jour de Codex | `codex-relays-check`, `systemctl --user restart codex-model-router`, puis redémarrer Codex Desktop |
 | Le sélecteur affiche encore « Claude » | catalogue en cache dans Codex Desktop, ou routeur pas redémarré | `systemctl --user restart codex-model-router`, puis redémarrer Codex Desktop |
 | `Unsupported image-conversation item: …` | nouveau type d’élément Codex | le relais le transmet désormais en texte ; signalez le type à corriger |
 | Compaction toutes les quelques minutes | ancien comptage cumulé des tokens | vérifier que le relais est à jour |

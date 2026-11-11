@@ -22,7 +22,7 @@ Le script :
 4. écrit `~/.codex/relay-guard/config-required.toml` puis lance `codex-relays-check`, qui ajoute à `config.toml` les réglages manquants (sauvegarde dans `~/.codex/relay-guard/`) ;
 5. lance la suite de tests.
 
-Redémarrez ensuite Codex Desktop : « Claude Opus 5.5 » et « Claude Fable » apparaissent dans le sélecteur de modèles.
+Redémarrez ensuite Codex Desktop : « Claude Opus 5.5 », « Claude Fable » et « Claude Sonnet » apparaissent dans le sélecteur de modèles.
 
 Options : `--no-tests`, `--no-services`, `--sync` (le dépôt suit ensuite le relais actif, voir [Synchronisation automatique](../README.md#synchronisation-automatique)).
 

@@ -5,6 +5,10 @@ Le format s’inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/
 
 ## [Non publié]
 
+### Ajouté
+
+- Modèle « Claude Sonnet » (`claude-code-sonnet`, appelle `claude-sonnet-5-5`) dans le sélecteur, avec ses propres efforts (low à max, medium par défaut).
+
 ## [1.2.0] - 2026-11-11
 
 Deux modèles Claude dans le sélecteur : « Claude Opus 5.5 », nouveau nom de « Claude », et « Claude Fable » (`claude-fable-5-2`).
