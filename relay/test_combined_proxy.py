@@ -36,7 +36,7 @@ class CombinedTests(unittest.IsolatedAsyncioTestCase):
      self.assertEqual(res.status,426);self.assertEqual(seen,[])
      res=await c.get('/v1/responses');self.assertEqual(res.status,401)
      res=await c.get('/v1/models',headers=headers);self.assertEqual(res.status,200)
-     models=(await res.json())['models'];self.assertEqual([m['slug'] for m in models],['gpt-test','actif','glm-5.3-flash','deepseek-v4.1','claude-code-opus','gemini-4-argon']);self.assertEqual(models[0]['base_instructions'],'original instructions')
+     models=(await res.json())['models'];self.assertEqual([m['slug'] for m in models],['gpt-test','actif','glm-5.3-flash','deepseek-v4.1','claude-code-opus','claude-code-fable','gemini-4-argon']);self.assertEqual(models[0]['base_instructions'],'original instructions')
      message=[{'role':'user','content':[{'type':'input_text','text':'Hi'}]}]
      p={'model':'gpt-test','input':message,'service_tier':'priority'}
      res=await c.post('/v1/responses',headers=headers,json=p);self.assertEqual(res.status,200);self.assertEqual(seen[-1],('openai',p))

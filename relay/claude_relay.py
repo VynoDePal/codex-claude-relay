@@ -8,8 +8,11 @@ from claude_history import recover_compactions
 from claude_subagents import recover_agent_messages
 from tool_catalog import slim_catalog
 
-MODELS={'claude-code-opus':'claude-opus-5-5'}
+MODELS={'claude-code-opus':'claude-opus-5-5','claude-code-fable':'claude-fable-5-1'}
 EFFORTS=('low','medium','high','xhigh','max')
+# Selector entry per model: displayed name, reasoning efforts Claude Code accepts, default effort.
+PROFILES={'claude-code-opus':{'name':'Claude Opus 5.5','label':'Claude Opus 5.5','efforts':EFFORTS,'default':'medium'},
+ 'claude-code-fable':{'name':'Claude Fable','label':'Claude Fable 5.1','efforts':EFFORTS,'default':'medium'}}
 # Codex's built-in provider drops a stream after 300 s without an SSE event and
 # retries it, which restarted long Claude turns. Real progress events keep it open.
 HEARTBEAT_SECONDS=10
@@ -26,16 +29,17 @@ CLAUDE_PROTOCOL=PROTOCOL+(' Your only native tool is StructuredOutput: Bash, Rea
  'available on every turn; request them through calls.')
 
 def reasoning_effort(payload):
- effort=(payload.get('reasoning') or {}).get('effort') or 'medium'
- if effort=='none':effort='medium'  # Older Claude chats used the native-default label.
- if effort not in EFFORTS:raise ValueError('Unsupported Claude reasoning effort: '+str(effort))
+ profile=PROFILES.get(payload.get('model'),PROFILES['claude-code-opus'])
+ effort=(payload.get('reasoning') or {}).get('effort') or profile['default']
+ if effort=='none':effort=profile['default']  # Older Claude chats used the native-default label.
+ if effort not in profile['efforts']:raise ValueError('Unsupported Claude reasoning effort: '+str(effort))
  return effort
 
 def metadata():
- return [{'slug':slug,'display_name':'Claude Opus 5.5',
- 'description':'Claude Opus 5.5 via Claude Code ; outils et permissions gérés par Codex.',
+ return [{'slug':slug,'display_name':PROFILES[slug]['name'],
+ 'description':PROFILES[slug]['label']+' via Claude Code ; outils et permissions gérés par Codex.',
  'base_instructions':'You are a coding assistant powered by Claude inside Codex. Help complete the user request. Follow project instructions and configured permissions. Use the available Codex tools when needed; verify edits and tests before claiming success.',
- 'default_reasoning_level':'medium','supported_reasoning_levels':[{'effort':effort,'description':'Effort '+effort+' de Claude Opus 5.5.'} for effort in EFFORTS],
+ 'default_reasoning_level':PROFILES[slug]['default'],'supported_reasoning_levels':[{'effort':effort,'description':'Effort '+effort+' de '+PROFILES[slug]['label']+'.'} for effort in PROFILES[slug]['efforts']],
  'shell_type':'unified_exec','visibility':'list','supported_in_api':True,'priority':110+i,
  'tool_mode':'code_mode_only','apply_patch_tool_type':'freeform','supports_parallel_tool_calls':True,
  'include_skills_usage_instructions':True,'include_plugin_usage_instructions':True,'include_apps_usage_instructions':True,

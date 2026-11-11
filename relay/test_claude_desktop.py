@@ -52,7 +52,7 @@ class ClaudeDesktopTests(unittest.IsolatedAsyncioTestCase):
                 async with TestClient(TestServer(router)) as client:
                     response = await client.get('/v1/models?client_version=0.160.0', headers={'Authorization': 'Bearer native-test'})
                     self.assertEqual(response.status, 200)
-                    self.assertEqual([m['slug'] for m in (await response.json())['models']], ['gpt-test', 'glm-5.3-flash', 'claude-code-opus', 'gemini-4-argon'])
+                    self.assertEqual([m['slug'] for m in (await response.json())['models']], ['gpt-test', 'glm-5.3-flash', 'claude-code-opus', 'claude-code-fable', 'gemini-4-argon'])
 
     async def test_offline_gpu_does_not_hide_cached_models_and_claude(self):
         release = asyncio.Event()
@@ -71,7 +71,7 @@ class ClaudeDesktopTests(unittest.IsolatedAsyncioTestCase):
                     try:
                         response = await asyncio.wait_for(client.get('/v1/models?client_version=0.160.0', headers={'Authorization': 'Bearer native-test'}), 3)
                         self.assertEqual(response.status, 200)
-                        self.assertEqual([m['slug'] for m in (await response.json())['models']], ['cached-model', 'claude-code-opus', 'gemini-4-argon'])
+                        self.assertEqual([m['slug'] for m in (await response.json())['models']], ['cached-model', 'claude-code-opus', 'claude-code-fable', 'gemini-4-argon'])
                     finally:
                         release.set()
 
@@ -95,10 +95,13 @@ class ClaudeDesktopTests(unittest.IsolatedAsyncioTestCase):
                     response = await client.get('/v1/models?client_version=0.160.0', headers={'Authorization': 'Bearer native-test'})
                     self.assertEqual(response.status, 200)
                     models = (await response.json())['models']
-                    self.assertEqual([m['slug'] for m in models], ['gpt-test', 'glm-5.3-flash', 'deepseek-v4.1', 'claude-code-opus', 'gemini-4-argon'])
+                    self.assertEqual([m['slug'] for m in models], ['gpt-test', 'glm-5.3-flash', 'deepseek-v4.1', 'claude-code-opus', 'claude-code-fable', 'gemini-4-argon'])
                     claude = next(m for m in models if m['slug'] == 'claude-code-opus')
                     self.assertEqual(claude['display_name'], 'Claude Opus 5.5')
                     self.assertEqual([l['effort'] for l in claude['supported_reasoning_levels']], ['low', 'medium', 'high', 'xhigh', 'max'])
+                    fable = next(m for m in models if m['slug'] == 'claude-code-fable')
+                    self.assertEqual(fable['display_name'], 'Claude Fable')
+                    self.assertEqual([l['effort'] for l in fable['supported_reasoning_levels']], ['low', 'medium', 'high', 'xhigh', 'max'])
 
     async def test_cli_uses_pinned_opus_effort_and_codex_remains_tool_executor(self):
         with tempfile.TemporaryDirectory() as temp:
@@ -123,6 +126,12 @@ print(json.dumps({"type":"result","structured_output":{"text":"ok","calls":[]},"
             self.assertIn('--strict-mcp-config', args)
             self.assertNotIn('--dangerously-skip-permissions', args)
             self.assertEqual(result['output'][0]['content'][0]['text'], 'ok')
+            fable = {'model': 'claude-code-fable', 'input': 'hello', 'reasoning': {'effort': 'max'}}
+            with patch('claude_relay.pathlib.Path.home', return_value=root):
+                await run_cli(fable, root)
+            args = json.loads((root / 'claude-selector/observed.json').read_text())['args']
+            self.assertEqual(args[args.index('--model') + 1], 'claude-fable-5-1')
+            self.assertEqual(args[args.index('--effort') + 1], 'max')
 
     def test_custom_tool_grammar_reaches_the_model_with_namespace(self):
         payload = {
