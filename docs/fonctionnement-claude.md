@@ -7,10 +7,11 @@ Chaque section décrit un problème réellement rencontré et la façon dont le 
 | Slug | Affiché | Modèle Claude Code | Efforts | Par défaut |
 |---|---|---|---|---|
 | `claude-code-opus` | Claude Opus 5.5 | `claude-opus-5-5` | low, medium, high, xhigh, max | medium |
-| `claude-code-fable` | Claude Fable | `claude-fable-5-1` | low, medium, high, xhigh, max | medium |
+| `claude-code-fable` | Claude Fable | `claude-fable-5-2` | low, medium, high, xhigh, max | medium |
 
 - Chaque modèle a son propre profil dans `PROFILES` ([relay/claude_relay.py](../relay/claude_relay.py)) : nom affiché, efforts acceptés et effort par défaut. `ultra` n’existe pas pour Claude.
-- Les efforts de Claude Fable ont été vérifiés un par un auprès de Claude Code le 11/11/2026. Claude Code utilise aussi `claude-opus-4-8` pour ses appels annexes.
+- Les efforts de Claude Fable ont été vérifiés un par un auprès de Claude Code 2.1.322 le 11/11/2026 : contexte de 1 000 000 tokens, réponses jusqu’à 128 000 tokens.
+- Quand Claude Code change le modèle derrière un alias (par exemple `fable`), mettez à jour `MODELS` et `PROFILES` dans `claude_relay.py`, puis redémarrez le routeur.
 - Fenêtre annoncée à Codex : 1 000 000 tokens.
 
 ## Comptage des tokens et compaction

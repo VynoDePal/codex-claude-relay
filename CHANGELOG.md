@@ -7,7 +7,7 @@ Le format s’inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/
 
 ### Ajouté
 
-- Modèle « Claude Fable » (`claude-code-fable`, appelle `claude-fable-5-1`) dans le sélecteur, avec ses propres efforts (low à max, medium par défaut).
+- Modèle « Claude Fable » (`claude-code-fable`, appelle `claude-fable-5-2`) dans le sélecteur, avec ses propres efforts (low à max, medium par défaut).
 
 ### Modifié
 
