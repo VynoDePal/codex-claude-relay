@@ -11,7 +11,7 @@ from tool_catalog import slim_catalog
 MODELS={'claude-code-opus':'claude-opus-5-5','claude-code-fable':'claude-fable-5-2','claude-code-sonnet':'claude-sonnet-5-5'}
 EFFORTS=('low','medium','high','xhigh','max')
 # Selector entry per model: displayed name, reasoning efforts Claude Code accepts, default effort.
-PROFILES={'claude-code-opus':{'name':'Claude Opus 5.5','label':'Claude Opus 5.5','efforts':EFFORTS,'default':'medium'},
+PROFILES={'claude-code-opus':{'name':'Claude Opus','label':'Claude Opus 5.5','efforts':EFFORTS,'default':'medium'},
  'claude-code-fable':{'name':'Claude Fable','label':'Claude Fable 5.2','efforts':EFFORTS,'default':'medium'},
  'claude-code-sonnet':{'name':'Claude Sonnet','label':'Claude Sonnet 5.5','efforts':EFFORTS,'default':'medium'}}
 # Codex's built-in provider drops a stream after 300 s without an SSE event and

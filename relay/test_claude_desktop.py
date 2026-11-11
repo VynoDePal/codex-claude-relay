@@ -97,7 +97,8 @@ class ClaudeDesktopTests(unittest.IsolatedAsyncioTestCase):
                     models = (await response.json())['models']
                     self.assertEqual([m['slug'] for m in models], ['gpt-test', 'glm-5.3-flash', 'deepseek-v4.1', 'claude-code-opus', 'claude-code-fable', 'claude-code-sonnet', 'gemini-4-argon'])
                     claude = next(m for m in models if m['slug'] == 'claude-code-opus')
-                    self.assertEqual(claude['display_name'], 'Claude Opus 5.5')
+                    self.assertEqual(claude['display_name'], 'Claude Opus')
+                    self.assertIn('Claude Opus 5.5', claude['description'])
                     self.assertEqual([l['effort'] for l in claude['supported_reasoning_levels']], ['low', 'medium', 'high', 'xhigh', 'max'])
                     fable = next(m for m in models if m['slug'] == 'claude-code-fable')
                     self.assertEqual(fable['display_name'], 'Claude Fable')
