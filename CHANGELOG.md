@@ -5,6 +5,10 @@ Le format s’inspire de [Keep a Changelog](https://keepachangelog.com/fr/1.1.0/
 
 ## [Non publié]
 
+## [1.2.0] - 2026-11-11
+
+Deux modèles Claude dans le sélecteur : « Claude Opus 5.5 », nouveau nom de « Claude », et « Claude Fable » (`claude-fable-5-2`).
+
 ### Ajouté
 
 - Modèle « Claude Fable » (`claude-code-fable`, appelle `claude-fable-5-2`) dans le sélecteur, avec ses propres efforts (low à max, medium par défaut).
@@ -93,7 +97,8 @@ Première version publique : Claude (Opus 5.5, via Claude Code) comme modèle da
 - Les tokens de Claude sont pris sur l’abonnement Claude ; sa limite de session peut interrompre un tour.
 - Testé sur Ubuntu uniquement.
 
-[Non publié]: https://github.com/VynoDePal/codex-claude-relay/compare/v1.1.1...HEAD
+[Non publié]: https://github.com/VynoDePal/codex-claude-relay/compare/v1.2.0...HEAD
+[1.2.0]: https://github.com/VynoDePal/codex-claude-relay/compare/v1.1.1...v1.2.0
 [1.1.1]: https://github.com/VynoDePal/codex-claude-relay/compare/v1.1.0...v1.1.1
 [1.1.0]: https://github.com/VynoDePal/codex-claude-relay/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/VynoDePal/codex-claude-relay/releases/tag/v1.0.0
